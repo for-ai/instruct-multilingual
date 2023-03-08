@@ -12,8 +12,8 @@ from promptsource.templates import DatasetTemplates
 def export_dataset(
 	dataset_output_dir,
 	dataset_name,
-	subset_name,
-	prompt_template,
+	dataset_config,
+	psrc_prompt_template_signature,
 	prompt,
 	dataset,
 	add_source_metadata=False,
@@ -27,7 +27,7 @@ def export_dataset(
 		os.makedirs(json_data_path, exist_ok=True)
 		json_data_path = os.path.join(
 			json_data_path,
-			(prompt_template + "." + prompt_name).replace("/", "_").replace(" ", "_")
+			(psrc_prompt_template_signature + "." + prompt_name).replace("/", "_").replace(" ", "_")
 			+ ".jsonl",
 		)
 		with open(json_data_path, "w", encoding="utf-8") as file_ptr:
@@ -36,7 +36,7 @@ def export_dataset(
 				enumerate(dataset_split),
 				total=total_num_sample,
 				desc="{}_{}_{}_{}_{}".format(
-					dataset_name, subset_name, split, prompt_template, prompt_name
+					dataset_name, dataset_config, split, psrc_prompt_template_signature, prompt_name
 				),
 			):
 				projected_sample = prompt.apply(sample, highlight_variables=False)
@@ -48,11 +48,11 @@ def export_dataset(
 					"id": _id,
 					"source": source,
 					"target": target,
-					"prompt_template": prompt_template,
+					"psrc_prompt_template_signature": psrc_prompt_template_signature,
 					"prompt_name": prompt_name,
 					"prompt_answer_choice_list": answer_choice_list,
 					"dataset_name": dataset_name,
-					"subset_name": subset_name,
+					"dataset_config": dataset_config,
 					"split": split,
 					"metrics": prompt.metadata.metrics,
 					"original_task": prompt.metadata.original_task,
@@ -143,7 +143,7 @@ def main():
 		"--highlight-variables",
 		action="store_true",
 		help="""Highlight token that are coming from the prompts and original dataset."
-		This feature can be use to differentiate prompt tokens and input tokens.""",
+		This feature can be used to differentiate prompt tokens and input tokens.""",
 	)
 	args = parser.parse_args()
 
