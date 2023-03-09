@@ -10,7 +10,7 @@ pip install -r requirements.txt
 
 ## Dataset Projection
 
-### promptsource 
+### [PromptSource](https://github.com/bigscience-workshop/promptsource)
 
 ```shell
 DUMP_FOLDER='' # fill this with your desired address
