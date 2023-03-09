@@ -51,3 +51,4 @@ wrapt==1.14.1
 xxhash==3.2.0
 yapf==0.32.0
 yarl==1.8.2
+promptsource==0.2.3
