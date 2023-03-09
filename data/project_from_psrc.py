@@ -5,21 +5,23 @@ import argparse
 import datasets
 from tqdm import tqdm
 import concurrent.futures
+from typing import Type, Union, List, Optional
 from tqdm.contrib.concurrent import process_map
-from promptsource.templates import DatasetTemplates
+from promptsource.templates import DatasetTemplates, Template
+from datasets import Dataset, DatasetDict, IterableDatasetDict, IterableDataset
 
 logger = logging.getLogger(__name__)
 
 def export_dataset(
-	dataset_output_dir,
-	dataset_name,
-	dataset_config,
-	psrc_prompt_template_signature,
-	prompt_template,
-	dataset,
-	add_source_metadata=False,
-	highlight_variables=False,
-):
+	dataset_output_dir: str,
+	dataset_name: str,
+	dataset_config: str,
+	psrc_prompt_template_signature: str,
+	prompt_template: Type[Template],
+	dataset: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
+	add_source_metadata: bool = False,
+	highlight_variables: bool = False,
+) -> str:
 	splits = list(dataset.keys())
 	prompt_name = prompt_template.get_name()
 	for split in splits:
@@ -79,7 +81,7 @@ def export_dataset(
 	return "Completed:: {} !".format(json_data_path)
 
 
-def invoke_none(lst):
+def invoke_none(lst: List[str]) -> Union[List[str], None]:
 	for idx, val in enumerate(lst):
 		if val == "None" or val == "none" or val == "null" or val == "":
 			lst[idx] = None
