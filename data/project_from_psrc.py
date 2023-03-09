@@ -36,7 +36,7 @@ def export_dataset(
     prompt_template (Type[Template]): Transformation/projection module that will take a sample from arg:dataset and transform it to an instruction.
     dataset (Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]): huggingface dataset that will be transformed into an instruction dataset.
     add_source_metadata (bool = False): If True, all the data column from the args:dataset will be saved as a meta information with the instruction dataset.
-            add_source_metadata (bool = False): If True, prompt tokens and dataset tokens will be highlighted differently. This metadata will be saved as  `highlighted_source` & `highlighted_target`.
+    add_source_metadata (bool = False): If True, prompt tokens and dataset tokens will be highlighted differently. This metadata will be saved as  `highlighted_source` & `highlighted_target`.
     """
     splits = list(dataset.keys())
     prompt_name = prompt_template.get_name()
