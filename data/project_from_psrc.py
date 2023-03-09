@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 import argparse
 import datasets
 from tqdm import tqdm
@@ -7,20 +8,20 @@ import concurrent.futures
 from tqdm.contrib.concurrent import process_map
 from promptsource.templates import DatasetTemplates
 
-
+logger = logging.getLogger(__name__)
 
 def export_dataset(
 	dataset_output_dir,
 	dataset_name,
 	dataset_config,
 	psrc_prompt_template_signature,
-	prompt,
+	prompt_template,
 	dataset,
 	add_source_metadata=False,
 	highlight_variables=False,
 ):
 	splits = list(dataset.keys())
-	prompt_name = prompt.get_name()
+	prompt_name = prompt_template.get_name()
 	for split in splits:
 		dataset_split = dataset[split]
 		json_data_path = os.path.join(dataset_output_dir, split)
@@ -39,8 +40,8 @@ def export_dataset(
 					dataset_name, dataset_config, split, psrc_prompt_template_signature, prompt_name
 				),
 			):
-				projected_sample = prompt.apply(sample, highlight_variables=False)
-				answer_choice_list = prompt.get_answer_choices_list(sample)
+				projected_sample = prompt_template.apply(sample, highlight_variables=False)
+				answer_choice_list = prompt_template.get_answer_choices_list(sample)
 				if len(projected_sample) != 2:
 					continue
 				source, target = projected_sample
@@ -54,13 +55,13 @@ def export_dataset(
 					"dataset_name": dataset_name,
 					"dataset_config": dataset_config,
 					"split": split,
-					"metrics": prompt.metadata.metrics,
-					"original_task": prompt.metadata.original_task,
-					"choices_in_prompt": prompt.metadata.choices_in_prompt,
-					"languages": prompt.metadata.languages,
+					"metrics": prompt_template.metadata.metrics,
+					"original_task": prompt_template.metadata.original_task,
+					"choices_in_prompt": prompt_template.metadata.choices_in_prompt,
+					"languages": prompt_template.metadata.languages,
 				}
 				if highlight_variables:
-					new_projected_sample = prompt.apply(
+					new_projected_sample = prompt_template.apply(
 						sample, highlight_variables=highlight_variables
 					)
 					source, target = new_projected_sample
@@ -186,19 +187,9 @@ def main():
 											args.highlight_variables)
 			prompted_sample_gen_io_tuple_list.append(prompted_sample_gen_io_tuple)
 	
-	# Test a single process run
-	# export_dataset(
-	# 	prompted_sample_gen_io_tuple_list[0][0],
-	# 	prompted_sample_gen_io_tuple_list[0][1],
-	# 	prompted_sample_gen_io_tuple_list[0][2],
-	# 	prompted_sample_gen_io_tuple_list[0][3],
-	# 	prompted_sample_gen_io_tuple_list[0][4],
-	# 	prompted_sample_gen_io_tuple_list[0][5],
-	# 	prompted_sample_gen_io_tuple_list[0][6],
-	# 	prompted_sample_gen_io_tuple_list[0][7],
-	# )
-
-	# Projecting data using multiprocessing. It's recommended to use large number of CPU machine. set up `--num-proc` accrodingly. 
+	# Projecting data using multiprocessing. 
+	# It's recommended to use large number of CPU machine if you are projecting multiple dataset. 
+	# set up `--num-proc` accrodingly. 
 	num_proc = min(args.num_proc, len(prompted_sample_gen_io_tuple_list))
 
 	with concurrent.futures.ProcessPoolExecutor(
@@ -208,20 +199,20 @@ def main():
 			executor.map(
 				export_dataset,
 				[prompted_sample_gen_io[0] for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list], # dataset_output_dir
-			[prompted_sample_gen_io[1] for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list], # dataset_name_or_path
-			[prompted_sample_gen_io[2] for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list], # dataset_config
-			[prompted_sample_gen_io[3] for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list], # psrc_prompt_template_signature
-			[prompted_sample_gen_io[4] for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list], # prompt_template
-			[prompted_sample_gen_io[5] for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list], # dataset
-			[prompted_sample_gen_io[6] for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list], # args.add_source_metadata
-			[prompted_sample_gen_io[7] for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list], # args.highlight_variables
+				[prompted_sample_gen_io[1] for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list], # dataset_name_or_path
+				[prompted_sample_gen_io[2] for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list], # dataset_config
+				[prompted_sample_gen_io[3] for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list], # psrc_prompt_template_signature
+				[prompted_sample_gen_io[4] for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list], # prompt_template
+				[prompted_sample_gen_io[5] for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list], # dataset
+				[prompted_sample_gen_io[6] for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list], # args.add_source_metadata
+				[prompted_sample_gen_io[7] for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list], # args.highlight_variables
 			),
 			total=len(args.dataset_name_or_paths),
 		):
 			try:
-				print(_out)
+				logger.info(_out)
 			except Exception as emsg:
-				print("Exception msg: {}".format(emsg))
+				logger.warning("Exception msg: {}".format(emsg))
 
 if __name__ == "__main__":
 	main()
