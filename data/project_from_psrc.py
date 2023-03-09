@@ -22,6 +22,21 @@ def export_dataset(
 	add_source_metadata: bool = False,
 	highlight_variables: bool = False,
 ) -> str:
+	"""
+	Given a `hf-dataset` (arg: dataset) and a prompt template (arg: prompt_template), 
+	project/transform samples from all the splits of dataset (arg: dataset) into an instruction format and
+	writes in the disk (arg: dataset_output_dir)
+
+	Args:
+        dataset_output_dir (str): Path to the output directory where data will be saved.
+        dataset_name (str): Name of the hf-dataset.
+        dataset_config (str): Name of the hf-dataset config.
+        psrc_prompt_template_signature (str): Name of the dataset & dataset-config for which prompts are written for.
+        prompt_template (Type[Template]): Transformation/projection module that will take a sample from arg:dataset and transform it to an instruction.
+        dataset (Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]): huggingface dataset that will be transformed into an instruction dataset. 
+        add_source_metadata (bool = False): If True, all the data column from the args:dataset will be saved as a meta information with the instruction dataset. 
+		add_source_metadata (bool = False): If True, prompt tokens and dataset tokens will be highlighted differently. This metadata will be saved as  `highlighted_source` & `highlighted_target`.
+	"""
 	splits = list(dataset.keys())
 	prompt_name = prompt_template.get_name()
 	for split in splits:
@@ -42,27 +57,29 @@ def export_dataset(
 					dataset_name, dataset_config, split, psrc_prompt_template_signature, prompt_name
 				),
 			):
-				projected_sample = prompt_template.apply(sample, highlight_variables=False)
-				answer_choice_list = prompt_template.get_answer_choices_list(sample)
-				if len(projected_sample) != 2:
+				# Project/transform sample into instruction.
+				prompted_sample = prompt_template.apply(sample, highlight_variables=False)
+				answer_choice_list = prompt_template.get_answer_choices_list(sample) # set of potential outcomes.
+				if len(prompted_sample) != 2: # if the prompt doesn't generate a tuple, that means it's an invalid prompted_sample
 					continue
-				source, target = projected_sample
+				source, target = prompted_sample
 				projected_sample_with_metadata = {
-					"id": _id,
-					"source": source,
-					"target": target,
-					"psrc_prompt_template_signature": psrc_prompt_template_signature,
-					"prompt_name": prompt_name,
-					"prompt_answer_choice_list": answer_choice_list,
-					"dataset_name": dataset_name,
-					"dataset_config": dataset_config,
-					"split": split,
-					"metrics": prompt_template.metadata.metrics,
-					"original_task": prompt_template.metadata.original_task,
-					"choices_in_prompt": prompt_template.metadata.choices_in_prompt,
-					"languages": prompt_template.metadata.languages,
+					"id": _id, #An unique id for the sample. Each line of the `jsonl` file contains `json` data which has a unique id within the `jsonl` file. (datatype: string/int)
+					"source": source, # projected input for the language model. This is the instruction. (datatype: string)
+					"target": target, # projected output for the language model. This is the gold response. (datatype: string)
+					"psrc_prompt_template_signature": psrc_prompt_template_signature, # prompt template signature from promptsource repository. Usually, a set of prompt templates are written for a task (i.e., glue/cola, glue/mrpc). This usually refers to that task. (datatype: string)
+					"prompt_name": prompt_name, #  Name of the individual prompt template.  Under a `psrc_prompt_template_signature` there could be many prompt templates. `prompt_name` refers to each of those prompt templates. (datatype: string)
+					"prompt_answer_choice_list": answer_choice_list, # Name of all potential outcomes. We often do not have any data for this field. Especially for generative tasks. Only categorical task has this field (i.e., [yes, no], [True, False], [A, B, C, D]). (datatype: list of strings)
+					"dataset_name": dataset_name, # Name of the huggingface dataset  (datatype: string)
+					"dataset_config": dataset_config, # Subset name of the huggingface dataset (datatype: string)
+					"split": split, # Split name (i.e., train, dev, test) (datatype: string)
+					"metrics": prompt_template.metadata.metrics, # metrics to evaluate the response. (datatype: list of strings)
+					"original_task": prompt_template.metadata.original_task, # If the prompted sample (source, target) refers to the original task for the dataset being created (datatype: True/False)
+					"choices_in_prompt": prompt_template.metadata.choices_in_prompt, # If there is any randomness in the prompt generation (datatype: list of strings)
+					"languages": prompt_template.metadata.languages, # The language of the prompt template (not the dataset). (datatype: list of strings)
 				}
 				if highlight_variables:
+					# Add highlight between prompt tokens and dataset tokens.
 					new_projected_sample = prompt_template.apply(
 						sample, highlight_variables=highlight_variables
 					)
@@ -71,6 +88,8 @@ def export_dataset(
 					projected_sample_with_metadata["highlighted_target"] = target
 
 				if add_source_metadata:
+					#  Take a backup of the data columns of the original dataset. 
+					#  This will help us to recover original projection in case we loose track of the generated ones due to various modifications & filters.  
 					for k, v in sample.items():
 						k = "src_meta_{}".format(k)
 						assert k not in projected_sample_with_metadata
@@ -82,6 +101,10 @@ def export_dataset(
 
 
 def invoke_none(lst: List[str]) -> Union[List[str], None]:
+	"""
+	helper function.
+	Takes a list of string and replace `None` where needed. 
+	"""
 	for idx, val in enumerate(lst):
 		if val == "None" or val == "none" or val == "null" or val == "":
 			lst[idx] = None
@@ -179,6 +202,7 @@ def main():
 		prompt_names = list(prompt_templates.name_to_id_mapping.keys())
 		for prompt_name in prompt_names:
 			prompt_template = prompt_templates[prompt_name]
+			# pre-calculate the arguments for multiprocesssing.
 			prompted_sample_gen_io_tuple = (dataset_output_dir,
 											dataset_name_or_path,
 											dataset_config,
