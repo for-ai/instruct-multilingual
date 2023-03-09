@@ -94,7 +94,8 @@ def main():
 		default="glue",
 		help="""A list of paths (seperated by space) to a huggingface dataset (or huggingface dataset singnature, i.e, super_glue, squad_v2).
 		A supported list can be found at https://github.com/bigscience-workshop/promptsource/tree/main/promptsource/templates .
-		In the case of a new dataset, it is possible to apply a different prompt template to to a new dataset it as long as 
+		Usually prompt templates are written for a specific datasets. But in the case of a new dataset, 
+		it is possible to apply a different (written for a different dataset) prompt template to a new dataset as long as 
 		the JSON structure of the dataset is the same as what is required in the original prompt template."""
 	)
 	parser.add_argument(
