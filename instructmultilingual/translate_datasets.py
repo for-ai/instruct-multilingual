@@ -1,9 +1,8 @@
 import os
-import pandas as pd
 
 from datasets import load_dataset
-from instructmultilingual.flores_200 import lang_name_to_code
-from optimum.onnxruntime import ORTModel, ORTModelForSeq2SeqLM
+from flores_200 import lang_name_to_code
+from optimum.onnxruntime import ORTModelForSeq2SeqLM
 from pathlib import Path
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 from typing import List
@@ -104,8 +103,9 @@ if __name__ == "__main__":
             "Chinese (Simplified)",
             # "Portuguese",
         ],
-        # checkpoint="facebook/nllb-200-distilled-600M",
-        checkpoint="facebook/nllb-200-3.3B",
+        checkpoint="facebook/nllb-200-distilled-600M",
+        # checkpoint="facebook/nllb-200-3.3B",
         # checkpoint="onnx_facebook_nllb-200-3.3B/",
-        printout=True
+        # checkpoint="onnx_facebook_nllb-200-distilled-600M",
+        # printout=True
     )
