@@ -103,9 +103,9 @@ if __name__ == "__main__":
             "Chinese (Simplified)",
             # "Portuguese",
         ],
-        checkpoint="facebook/nllb-200-distilled-600M",
+        # checkpoint="facebook/nllb-200-distilled-600M",
         # checkpoint="facebook/nllb-200-3.3B",
         # checkpoint="onnx_facebook_nllb-200-3.3B/",
-        # checkpoint="onnx_facebook_nllb-200-distilled-600M",
+        checkpoint="onnx_facebook_nllb-200-distilled-600M",
         # printout=True
     )
