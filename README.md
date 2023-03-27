@@ -38,3 +38,12 @@ This script translate the samsum dataset using the inference server
 ```
 python main.py
 ```
+
+## Translate
+
+```shell
+python -m instructmultilingual.translate \
+          --text="Cohere For AI will make the best instruct multilingual model in the world" \
+          --source_language="English" \
+          --target_language="Egyptian Arabic"
+```
