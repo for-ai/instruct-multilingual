@@ -1,15 +1,36 @@
+"""Translate datasets using the inference server API."""
+
 import os
-import requests
 import time
+from multiprocessing import cpu_count
+from pathlib import Path
+from typing import Dict, List
+
+import requests
 
 from datasets import DatasetDict
 from instructmultilingual.flores_200 import lang_name_to_code
-from multiprocessing import cpu_count
-from pathlib import Path
-from typing import List
+
+TOTAL_NUMBER_OF_CPUS = cpu_count()
 
 
-def translate(url, source_language, target_language, texts):
+def translation_request(
+    url: str,
+    source_language: str,
+    target_language: str,
+    texts: str,
+) -> str:
+    """Creates a HTTP POST request to the translation server.
+
+    Args:
+        url (str): URL of the server.
+        source_language (str): Languague of the original text.
+        target_language (str): Languague of the translated text.
+        texts (str): the
+
+    Returns:
+        str: The translated text from the API
+    """
     headers = {"Content-Type": "application/json"}
     data = {
         "source_language": source_language,
@@ -20,15 +41,29 @@ def translate(url, source_language, target_language, texts):
     return response.json()["translated_texts"]
 
 
-def tokenization(
-    example,
-    url,
-    source_lang_code,
-    target_lang_code,
-    keys_to_be_translated=["dialogue", "summary"],
-):
+def translate(
+    example: Dict[str, str],
+    url: str,
+    source_lang_code: str,
+    target_lang_code: str,
+    keys_to_be_translated: List[str],
+) -> Dict[str, str]:
+    """Takes an example dictionary of translation keys and text values, and
+    iterates over them to make translation requests to the inference API
+    server.
+
+    Args:
+        example (Dict[str, str]): a dictionary of translation keys and text values to be translated.
+        url (str): URL of the server.
+        source_lang_code (str): Languague of the original text.
+        target_lang_code (str): Languague of the translated text.
+        keys_to_be_translated (List[str]): keys from example that should be translated via translation_request.
+
+    Returns:
+        Dict[str, str]: Translated example.
+    """
     for key in keys_to_be_translated:
-        example[key] = translate(url, source_lang_code, target_lang_code, example[key])
+        example[key] = translation_request(url, source_lang_code, target_lang_code, example[key])
     return example
 
 
@@ -42,10 +77,13 @@ def translate_dataset_via_api(
     output_dir: str = "./datasets",
     source_language: str = "English",
     checkpoint: str = "facebook/nllb-200-3.3B",
-    num_proc: int = cpu_count(),
+    num_proc: int = TOTAL_NUMBER_OF_CPUS,
 ) -> None:
-    """This function takes an DatasetDict object and translates it via the translation inference server API. 
-       The function then ouputs the translations in both json and csv formats into a output directory under the following naming convention:
+    """This function takes an DatasetDict object and translates it via the
+    translation inference server API. The function then ouputs the translations
+    in both json and csv formats into a output directory under the following
+    naming convention:
+
        <root>/<dataset_name>/<target_language_code>/
 
     Args:
@@ -75,7 +113,7 @@ def translate_dataset_via_api(
         ds = dataset[split]
         print(f"[{split}] {len(ds)=}")
         ds = ds.map(
-            lambda x: tokenization(
+            lambda x: translate(
                 x,
                 url=url,
                 source_lang_code=source_language_code,
@@ -99,8 +137,7 @@ def translate_dataset_via_api(
             os.path.join(
                 translated_dir,
                 f"{dataset_name}_{split}_{target_language_code}_{checkpoint_str}.jsonl",
-            )
-        )
+            ))
 
     end_time = time.time()
     elapsed_time = end_time - start_time
