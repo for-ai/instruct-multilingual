@@ -1,4 +1,6 @@
 models/
+datasets/
+onnx_*/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
