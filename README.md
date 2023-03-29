@@ -8,31 +8,35 @@ conda activate instructmultilingual
 pip install -r requirements.txt
 ```
 
-## Dataset Projection
 
-### [PromptSource](https://github.com/bigscience-workshop/promptsource)
+## Inference Server
+
+### Convert the models first
 
 ```shell
-DUMP_FOLDER='' # fill this with your desired address
-SRC_DATA_FOLDER=$DUMP_FOLDER/projection_from_psrc
-mkdir -p $SRC_DATA_FOLDER
-mkdir -p $SRC_DATA_FOLDER/cache
-
-python data/project_from_psrc.py \
---dataset-name-or-paths glue glue glue glue glue \
---dataset-configs cola sst2 mrpc qqp stsb \
---prompt-templates-configs None None None None None \
---cache-dir $SRC_DATA_FOLDER/cache \
---output-dir $SRC_DATA_FOLDER \
---highlight-variables \
---add-source-metadata \
---num-proc 16
+mkdir models
+ct2-transformers-converter --model facebook/nllb-200-3.3B --output_dir models/nllb-200-3.3B-converted
 ```
 
-See the details of the arguments by, 
-
+### Run the server locally
 ```shell
-python data/project_from_psrc.py --help
+uvicorn instructmultilingual.server:app --host 0.0.0.0 --port 8000
+```
+
+### Using docker to run the server
+```shell
+# Build
+docker build -t instruct-multilingual .
+
+# Run
+docker run -it --rm --gpus 1,2,3,4,5,6,7,8 -p 8000:8000 -v $(pwd):/instruct-multilingual instruct-multilingual
+```
+
+### Client Side
+
+This script translate the samsum dataset using the inference server
+```
+python main.py
 ```
 
 ## Translate
