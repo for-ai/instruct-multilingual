@@ -2,7 +2,6 @@
 
 import os
 import time
-from multiprocessing import cpu_count
 from pathlib import Path
 from typing import Dict, List
 
@@ -10,8 +9,6 @@ import requests
 
 from datasets import DatasetDict
 from instructmultilingual.flores_200 import lang_name_to_code
-
-TOTAL_NUMBER_OF_CPUS = cpu_count()
 
 
 def translation_request(
@@ -77,7 +74,7 @@ def translate_dataset_via_api(
     output_dir: str = "./datasets",
     source_language: str = "English",
     checkpoint: str = "facebook/nllb-200-3.3B",
-    num_proc: int = TOTAL_NUMBER_OF_CPUS,
+    num_proc: int = 8,
 ) -> None:
     """This function takes an DatasetDict object and translates it via the
     translation inference server API. The function then ouputs the translations
