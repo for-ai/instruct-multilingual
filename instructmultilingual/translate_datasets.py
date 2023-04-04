@@ -1,12 +1,14 @@
 import os
-import requests
 import time
-
-from datasets import DatasetDict
-from instructmultilingual.flores_200 import lang_name_to_code
+from datetime import datetime
 from multiprocessing import cpu_count
 from pathlib import Path
 from typing import List
+
+import requests
+
+from datasets import DatasetDict
+from instructmultilingual.flores_200 import lang_name_to_code
 
 
 def translate(url, source_language, target_language, texts):
@@ -33,24 +35,29 @@ def tokenization(
 
 
 def translate_dataset_via_api(
-    dataset: DatasetDict,
-    dataset_name: str,
-    splits: List[str],
-    translate_keys: List[str],
-    target_language: str,
-    url: str = "http://localhost:8000/translate",
-    output_dir: str = "./datasets",
-    source_language: str = "English",
-    checkpoint: str = "facebook/nllb-200-3.3B",
-    num_proc: int = cpu_count(),
+        dataset: DatasetDict,
+        dataset_name: str,
+        template_name: str,
+        splits: List[str],
+        translate_keys: List[str],
+        target_language: str,
+        url: str = "http://localhost:8000/translate",
+        output_dir: str = "./datasets",
+        source_language: str = "English",
+        checkpoint: str = "facebook/nllb-200-3.3B",
+        num_proc: int = cpu_count(),
 ) -> None:
-    """This function takes an DatasetDict object and translates it via the translation inference server API. 
-       The function then ouputs the translations in both json and csv formats into a output directory under the following naming convention:
-       <root>/<dataset_name>/<target_language_code>/
+    """This function takes an DatasetDict object and translates it via the
+    translation inference server API. The function then ouputs the translations
+    in both json and csv formats into a output directory under the following
+    naming convention:
+
+       <output_dir>/<dataset_name>/<source_language_code>_to_<target_language_code>/<checkpoint>/<template_name>/<date>/<split>.<file_type>
 
     Args:
         dataset (DatasetDict): A DatasetDict object of the original text dataset. Needs to have at least one split.
         dataset_name (str): Name of the dataset for storing output.
+        template_name (str): Name of the template for storing output.
         splits (List[str]): Split names in the dataset you want translated.
         translate_keys (List[str]): The keys/columns for the texts you want translated.
         target_language (str): the language you want translation to.
@@ -61,12 +68,13 @@ def translate_dataset_via_api(
         num_proc (int, optional): Number of processes to use for processing the dataset. Defaults to cpu_count().
     """
 
+    date = datetime.today().strftime('%Y-%m-%d')
+
     source_language_code = lang_name_to_code[source_language]
     target_language_code = lang_name_to_code[target_language]
 
     checkpoint_str = checkpoint.replace("/", "-")
-    translated_dir = Path(os.path.join(output_dir, dataset_name, target_language_code))
-    translated_dir.mkdir(parents=True, exist_ok=True)
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
 
     start_time = time.time()
 
@@ -88,19 +96,21 @@ def translate_dataset_via_api(
         print(f"[{split}] One example translated {ds[0]=}")
         print(f"[{split}] took {time.time() - split_time:.4f} seconds")
 
+        translation_path = os.path.join(output_dir, dataset_name, f"{source_language_code}_to_{target_language_code}",
+                                        checkpoint_str, template_name, date)
+        Path(translation_path).mkdir(exist_ok=True, parents=True)
+
         ds.to_csv(
             os.path.join(
-                translated_dir,
-                f"{dataset_name}_{split}_{target_language_code}_{checkpoint_str}.csv",
+                translation_path,
+                f"{split}.csv",
             ),
             index=False,
         )
-        ds.to_json(
-            os.path.join(
-                translated_dir,
-                f"{dataset_name}_{split}_{target_language_code}_{checkpoint_str}.jsonl",
-            )
-        )
+        ds.to_json(os.path.join(
+            translation_path,
+            f"{split}.jsonl",
+        ))
 
     end_time = time.time()
     elapsed_time = end_time - start_time
