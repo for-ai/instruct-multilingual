@@ -356,6 +356,11 @@ def main():
 						"size": len(dt[split]),
 						"column": list(dt[split].column_names),
 					}
+					if "X-CSQA" in subset:
+						for sample in dt[split]:
+							assert len(sample['question']['choices']['label']) == 5
+
+
 
 	print(f"{json.dumps(stat_dict, indent=4)}")
 
