@@ -1,6 +1,7 @@
-"""Translate datasets from huggingface hub using a variety of methods"""
+"""Translate datasets from huggingface hub using a variety of methods."""
 
 import os
+import random
 import time
 from collections import defaultdict
 from datetime import datetime
@@ -34,18 +35,16 @@ T5_LANG_CODES = [
 ]
 
 T5_CLOUD_TRANSLATE_LANG_CODES = [
-    'jv', 'cy', 'ms', 'it', 'tg', 'sr', 'bs', 'zh-TW', 'km', 'la', 'sm', 'ee', 'am', 'be', 'kn', 'ht', 'gom', 'bm',
-    'te', 'ig', 'ja', 'ts', 'ceb', 'et', 'sq', 'ga', 'lus', 'pl', 'hy', 'rw', 'lo', 'bn', 'da', 'dv', 'yi', 'lg', 'nso',
-    'tt', 'is', 'ln', 'no', 'zu', 'eu', 'el', 'nl', 'so', 'haw', 'ko', 'ta', 'gd', 'eo', 'pa', 'ku', 'co', 'qu', 'fi',
-    'kri', 'sl', 'sw', 'st', 'uk', 'lb', 'ur', 'ar', 'hi', 'ml', 'pt', 'cs', 'tk', 'sa', 'bho', 'mai', 'iw', 'ug', 'ak',
-    'lt', 'bg', 'mi', 'sd', 'ny', 'ha', 'id', 'mg', 'fa', 'doi', 'ay', 'de', 'ky', 'om', 'es', 'ca', 'zh', 'vi', 'si',
-    'gl', 'sv', 'ps', 'mk', 'yo', 'th', 'sk', 'af', 'or', 'mr', 'hr', 'su', 'mni-Mtei', 'hu', 'ka', 'ru', 'gu', 'gn',
-    'lv', 'hmn', 'as', 'uz', 'en', 'ckb', 'ilo', 'ro', 'fr', 'mt', 'kk', 'jw', 'xh', 'fy', 'ti', 'zh-CN', 'sn', 'az',
-    'tl', 'he', 'my', 'mn', 'tr', 'ne'
+    'eu', 'st', 'lo', 'fi', 'co', 'ro', 'sd', 'sv', 'ta', 'kn', 'gd', 'et', 'gl', 'fy', 'ru', 'mr', 'zu', 'ky', 'da',
+    'sr', 'haw', 'hi', 'gu', 'su', 'tr', 'bn', 'hu', 'hy', 'jv', 'pa', 'de', 'la', 'uz', 'lt', 'no', 'xh', 'mk', 'ms',
+    'ur', 'ar', 'am', 'vi', 'it', 'cy', 'en', 'eo', 'be', 'id', 'my', 'is', 'nl', 'sn', 'sm', 'so', 'ha', 'mi', 'th',
+    'kk', 'ml', 'hmn', 'uk', 'ga', 'lb', 'zh-CN', 'zh-TW','mt', 'fr', 'ku', 'ht', 'sw', 'sk', 'km', 'si', 'ceb', 'tg', 'cs', 'pl',
+    'ig', 'sl', 'ka', 'ca', 'mn', 'yo', 'fa', 'es', 'iw', 'bg', 'af', 'el', 'ps', 'mg', 'yi', 'pt', 'ja', 'ny', 'ko',
+    'lv', 'te', 'sq', 'ne', 'az'
 ]
 
 
-def inference_request(url: str, source_language: str, target_language:str, texts: List[str]) -> List[str]:
+def inference_request(url: str, source_language: str, target_language: str, texts: List[str]) -> List[str]:
     """_summary_
 
     Args:
@@ -69,12 +68,12 @@ def inference_request(url: str, source_language: str, target_language:str, texts
 
 
 def call_inference_api(
-    example: Dict[str,List[str]],
+    example: Dict[str, List[str]],
     url: str,
     source_lang_code: str,
     target_lang_code: str,
-    keys_to_be_translated: List[str] =["dialogue", "summary"],
-) -> Dict[str,List[str]]:
+    keys_to_be_translated: List[str] = ["dialogue", "summary"],
+) -> Dict[str, List[str]]:
     """_summary_
 
     Args:
@@ -179,14 +178,14 @@ def translate_dataset_via_inference_api(
 def cloud_translate(example: Dict[str, str],
                     target_lang_code: str,
                     keys_to_be_translated: List[str],
-                    max_tries: int = 3) -> Dict[str, str]:
+                    max_tries: int = 5) -> Dict[str, str]:
     """_summary_
 
     Args:
         example (Dict[str, str]): _description_
         target_lang_code (str): _description_
         keys_to_be_translated (List[str]): _description_
-        max_tries (int, optional): _description_. Defaults to 3.
+        max_tries (int, optional): _description_. Defaults to 5.
 
     Returns:
         Dict[str, str]: _description_
@@ -201,10 +200,10 @@ def cloud_translate(example: Dict[str, str],
             for key in keys_to_be_translated:
                 results = translate_client.translate(example[key], target_language=target_lang_code)
                 example[key] = [result["translatedText"] for result in results]
-                time.sleep(1)
+                time.sleep(random.uniform(0.8, 1.5))
         except Exception as e:
             print(e)
-            time.sleep(2)
+            time.sleep(random.uniform(2,5))
 
     return example
 
@@ -350,7 +349,7 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
 
                 pth = os.path.join(temp_split_dir, f)
                 dataset_template[split].append(pth)
-    print(dataset_template)
+
     dataset = load_dataset('json', data_files=dataset_template)
 
     # Make a copy of the source dataset inside translated datasets as well
@@ -366,13 +365,13 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
         dataset[s].to_csv(
             os.path.join(
                 translation_path,
-                f"{s}.csv",
+                f"{s}_to_{s}.csv",
             ),
             index=False,
         )
         dataset[s].to_json(os.path.join(
             translation_path,
-            f"{s}.jsonl",
+            f"{s}_to_{s}.jsonl",
         ))
 
     if checkpoint == "google_cloud_translate":
