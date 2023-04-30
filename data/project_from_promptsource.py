@@ -325,44 +325,9 @@ def main():
 	# It's recommended to use large number of CPU machine if you are projecting multiple dataset.
 	# set up `--num-proc` accrodingly.
 	num_proc = min(args.num_proc, len(prompted_sample_gen_io_tuple_list))
-
 	with concurrent.futures.ProcessPoolExecutor(max_workers=num_proc) as executor:
 		for _out in tqdm(
-			executor.map(
-				export_dataset_func,
-				[
-					prompted_sample_gen_io[0]
-					for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list
-				],  # dataset_output_dir
-				[
-					prompted_sample_gen_io[1]
-					for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list
-				],  # dataset_name_or_path
-				[
-					prompted_sample_gen_io[2]
-					for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list
-				],  # dataset_config
-				[
-					prompted_sample_gen_io[3]
-					for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list
-				],  # psrc_prompt_template_signature
-				[
-					prompted_sample_gen_io[4]
-					for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list
-				],  # prompt_template
-				[
-					prompted_sample_gen_io[5]
-					for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list
-				],  # dataset
-				[
-					prompted_sample_gen_io[6]
-					for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list
-				],  # args.add_source_metadata
-				[
-					prompted_sample_gen_io[7]
-					for prompted_sample_gen_io in prompted_sample_gen_io_tuple_list
-				],  # args.highlight_variables
-			),
+			executor.map(export_dataset_func, *zip(*prompted_sample_gen_io_tuple_list)),
 			total=len(args.dataset_name_or_paths),
 		):
 			try:
