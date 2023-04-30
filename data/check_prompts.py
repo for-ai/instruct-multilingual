@@ -3,16 +3,33 @@ import csv
 import json
 import argparse
 import subprocess
+from typing import Tuple, Optional	
 from promptsource.templates import Template
 from .data_stat import SERIES_A_DATASET_NAME_DICT
 
 def check(
-	json_example, 
-	template_name, 
-	jinja_template, 
-	template_reference=None, 
-	answer_choices=None
-):
+	json_example: str, 
+	template_name: str, 
+	jinja_template: str, 
+	template_reference: Optional[str] = None, 
+	answer_choices: Optional[str] = None
+)-> Tuple[str, str]:
+	"""
+	Given a 
+	Args:
+		json_example (str): a string contains json object. The json object is loaded 
+								by `json.loads()`. Typically this is a sample from 
+								huggingface dataset converted to a string by a `json.dumps()`. 
+		template_name: unique name (per dataset) for template
+        jinja_template: template expressed in Jinja
+        template_reference: string describing author or paper reference for template
+        answer_choices: Jinja expression for answer choices. Should produce
+                            	a ||| delimited string of choices that enumerates
+                            	the possible completions for templates that should
+                            	be evaluated as ranked completions. If None, then
+                            	the template is open-ended. This list is accessible
+                            	from within Jinja as the variable `answer_choices`.
+	"""
 	json_example = json.loads(json_example)
 	template = Template(
 		template_name, 
