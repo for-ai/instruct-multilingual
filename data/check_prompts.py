@@ -4,7 +4,7 @@ import json
 import argparse
 import subprocess
 from typing import Tuple, Optional	
-from promptsource.templates import Template
+from promptsource.templates import Template, Metadata
 from .data_stat import SERIES_A_DATASET_NAME_DICT
 
 def check(
@@ -12,10 +12,12 @@ def check(
 	template_name: str, 
 	jinja_template: str, 
 	template_reference: Optional[str] = None, 
+	metadata: Optional[Metadata] = None, 
 	answer_choices: Optional[str] = None
 )-> Tuple[str, str]:
 	"""
-	Given a 
+	Given an example (`json_example`) from a huggingface dataset and prompt template (`jinja_template`),
+	the objective is to check if we can project the example in language model i/o format.  
 	Args:
 		json_example (str): a string contains json object. The json object is loaded 
 								by `json.loads()`. Typically this is a sample from 
@@ -23,6 +25,8 @@ def check(
 		template_name: unique name (per dataset) for template
         jinja_template: template expressed in Jinja
         template_reference: string describing author or paper reference for template
+		metadata: A Metadata object with template annotations. 
+								Follow [here](https://github.com/bigscience-workshop/promptsource/blob/main/promptsource/templates.py#L417) for more details.
         answer_choices: Jinja expression for answer choices. Should produce
                             	a ||| delimited string of choices that enumerates
                             	the possible completions for templates that should
@@ -35,6 +39,7 @@ def check(
 		template_name, 
 	 	jinja_template, 
 	  	template_reference, 
+		metadata=metadata,
 	   	answer_choices=answer_choices
 	)
 	lm_io = template.apply(json_example, highlight_variables=False)
