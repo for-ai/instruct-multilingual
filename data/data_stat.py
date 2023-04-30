@@ -1,3 +1,5 @@
+import os
+import csv
 import json
 import datasets
 import argparse
@@ -319,6 +321,48 @@ SERIES_A_DATASET_NAME_DICT = {
 		'fr-fon', 
 		'fr-mos', 
 		'fr-wol'
+	],
+	"exams":[
+		'alignments', 
+		'multilingual', 
+		'multilingual_with_para', 
+		'crosslingual_test', 
+		'crosslingual_with_para_test', 
+		'crosslingual_bg', 
+		'crosslingual_with_para_bg', 
+		'crosslingual_hr', 
+		'crosslingual_with_para_hr', 
+		'crosslingual_hu', 
+		'crosslingual_with_para_hu', 
+		'crosslingual_it', 
+		'crosslingual_with_para_it', 
+		'crosslingual_mk', 
+		'crosslingual_with_para_mk', 
+		'crosslingual_pl', 
+		'crosslingual_with_para_pl', 
+		'crosslingual_pt', 
+		'crosslingual_with_para_pt', 
+		'crosslingual_sq', 
+		'crosslingual_with_para_sq', 
+		'crosslingual_sr', 
+		'crosslingual_with_para_sr', 
+		'crosslingual_tr', 
+		'crosslingual_with_para_tr', 
+		'crosslingual_vi', 
+		'crosslingual_with_para_vi'
+	],
+	"allenai/soda": None, 
+	"arabic_billion_words":[
+		'Alittihad', 
+		'Almasryalyoum', 
+		'Almustaqbal', 
+		'Alqabas', 
+		'Echoroukonline', 
+		'Ryiadh', 
+		'Sabanews', 
+		'SaudiYoum', 
+		'Techreen', 
+		'Youm7'
 	]
 }
 
@@ -329,6 +373,17 @@ def main():
 		nargs="+",
 		default=None,
 		help="Print the stat of the dataset. If `None` it will print stat of all the used data."
+	)
+	parser.add_argument(
+		"--export-format",
+		choices=['json', "csv"],
+		default=".json",
+		help="Which format you want to export."
+	)
+	parser.add_argument(
+		"--output-dir",
+		default=None,
+		help="The path to the folder where stat will be saved."
 	)
 	args = parser.parse_args()
 	stat_dict = {}
@@ -360,9 +415,21 @@ def main():
 						for sample in dt[split]:
 							assert len(sample['question']['choices']['label']) == 5
 
-
-
-	print(f"{json.dumps(stat_dict, indent=4)}")
+	if args.output_dir != 'None': 
+		file_name = os.path.join(args.output_dir, "stat") + f".{args.export_format}"
+		if args.export_format == "json":
+			with open(file_name, "w") as file_ptr:
+				file_ptr.write(f"{json.dumps(stat_dict, indent=4)}\n")
+		elif args.export_format == "csv":
+			# with open(file_name, mode='w') as file_ptr:
+			# 	writer = csv.writer(file_ptr)
+			# 	for dataset_name, subset_name, in SERIES_A_DATASET_NAME_DICT.keys():
+			# 		row = [f"{dataset_name}"]
+				
+			# 	writer.writerow(stat_dict.values())
+			pass
+		else:
+			raise NotImplementedError
 
 if __name__ == "__main__":
 	main()
