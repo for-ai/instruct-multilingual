@@ -392,28 +392,22 @@ def main():
 	for dataset_name, subset_names in SERIES_A_DATASET_NAME_DICT.items():
 		if dataset_name not in args.dataset_names:
 			continue
+		assert dataset_name not in stat_dict
 		stat_dict[dataset_name] = {}
-		if subset_names is None:
-			stat_dict[dataset_name]['Subset(None)'] = {}
-			dt = datasets.load_dataset(dataset_name, ignore_verifications=True)
+		subset_names = [None] if subset_names is None else subset_names
+		for subset in subset_names:
+			assert subset not in stat_dict[dataset_name]
+			stat_dict[dataset_name][subset] = {}
+			dt = datasets.load_dataset(dataset_name, name=subset, ignore_verifications=True)
 			for split in dt.keys():
-				stat_dict[dataset_name]['Subset(None)'][split] = {
+				stat_dict[dataset_name][subset][split] = {
 					"size": len(dt[split]),
 					"column": list(dt[split].column_names),
 				}
-		else:
-			for subset in subset_names:
-				assert subset not in stat_dict[dataset_name]
-				stat_dict[dataset_name][subset] = {}
-				dt = datasets.load_dataset(dataset_name, name=subset, ignore_verifications=True)
-				for split in dt.keys():
-					stat_dict[dataset_name][subset][split] = {
-						"size": len(dt[split]),
-						"column": list(dt[split].column_names),
-					}
-					if "X-CSQA" in subset:
-						for sample in dt[split]:
-							assert len(sample['question']['choices']['label']) == 5
+				# re-valuation of hypothesis considered in prompt template
+				if subset is not None and "X-CSQA" in subset:
+					for sample in dt[split]:
+						assert len(sample['question']['choices']['label']) == 5
 
 	if args.output_dir != 'None': 
 		file_name = os.path.join(args.output_dir, "stat") + f".{args.export_format}"
