@@ -87,7 +87,9 @@ def call_inference_api(
         Dict[str,List[str]]: _description_
     """
     for key in keys_to_be_translated:
-        example[key] = inference_request(url, source_lang_code, target_lang_code, example[key])
+        # NLLB model seems to ignore some sentences right before newline characters
+        batch_str = [sen.replace('\n','') for sen in example[key]]
+        example[key] = inference_request(url, source_lang_code, target_lang_code, batch_str)
     return example
 
 
@@ -359,19 +361,19 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
     else:
         source_language_code = lang_name_to_code[source_language]
     checkpoint_str = checkpoint.replace("/", "-")
-    translation_path = os.path.join(output_dir, dataset_name, source_language_code, checkpoint_str, template_name, date)
+    translation_path = os.path.join(output_dir, dataset_name, f"{source_language_code}_to_{source_language_code}", checkpoint_str, template_name, date)
     Path(translation_path).mkdir(exist_ok=True, parents=True)
     for s in dataset.keys():
         dataset[s].to_csv(
             os.path.join(
                 translation_path,
-                f"{s}_to_{s}.csv",
+                f"{s}.csv",
             ),
             index=False,
         )
         dataset[s].to_json(os.path.join(
             translation_path,
-            f"{s}_to_{s}.jsonl",
+            f"{s}.jsonl",
         ))
 
     if checkpoint == "google_cloud_translate":
