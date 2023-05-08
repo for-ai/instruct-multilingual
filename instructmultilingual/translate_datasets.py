@@ -11,6 +11,7 @@ from typing import Dict, List, Set
 import requests
 from google.cloud import translate_v2
 from huggingface_hub import hf_hub_download
+from sentence_splitter import split_text_into_sentences
 
 from datasets import DatasetDict, load_dataset
 from instructmultilingual.cloud_translate_mapping import (cloud_translate_lang_code_to_name,
@@ -38,23 +39,23 @@ T5_CLOUD_TRANSLATE_LANG_CODES = [
     'eu', 'st', 'lo', 'fi', 'co', 'ro', 'sd', 'sv', 'ta', 'kn', 'gd', 'et', 'gl', 'fy', 'ru', 'mr', 'zu', 'ky', 'da',
     'sr', 'haw', 'hi', 'gu', 'su', 'tr', 'bn', 'hu', 'hy', 'jv', 'pa', 'de', 'la', 'uz', 'lt', 'no', 'xh', 'mk', 'ms',
     'ur', 'ar', 'am', 'vi', 'it', 'cy', 'en', 'eo', 'be', 'id', 'my', 'is', 'nl', 'sn', 'sm', 'so', 'ha', 'mi', 'th',
-    'kk', 'ml', 'hmn', 'uk', 'ga', 'lb', 'zh-CN', 'zh-TW','mt', 'fr', 'ku', 'ht', 'sw', 'sk', 'km', 'si', 'ceb', 'tg', 'cs', 'pl',
-    'ig', 'sl', 'ka', 'ca', 'mn', 'yo', 'fa', 'es', 'iw', 'bg', 'af', 'el', 'ps', 'mg', 'yi', 'pt', 'ja', 'ny', 'ko',
-    'lv', 'te', 'sq', 'ne', 'az'
+    'kk', 'ml', 'hmn', 'uk', 'ga', 'lb', 'zh-CN', 'zh-TW', 'mt', 'fr', 'ku', 'ht', 'sw', 'sk', 'km', 'si', 'ceb', 'tg',
+    'cs', 'pl', 'ig', 'sl', 'ka', 'ca', 'mn', 'yo', 'fa', 'es', 'iw', 'bg', 'af', 'el', 'ps', 'mg', 'yi', 'pt', 'ja',
+    'ny', 'ko', 'lv', 'te', 'sq', 'ne', 'az'
 ]
 
 
 def inference_request(url: str, source_language: str, target_language: str, texts: List[str]) -> List[str]:
-    """_summary_
+    """A HTTP POST request to the inference server for translation.
 
     Args:
-        url (str): _description_
-        source_language (str): _description_
-        target_language (str): _description_
-        texts (List[str]): _description_
+        url (str): The URL of the inference API server
+        source_language (str): Language code for the source language
+        target_language (str): Language code for the target language
+        texts (List[str]): List of texts to be translated
 
     Returns:
-        List[str]: _description_
+        List[str]: List of translated text
     """
 
     headers = {"Content-Type": "application/json"}
@@ -74,22 +75,83 @@ def call_inference_api(
     target_lang_code: str,
     keys_to_be_translated: List[str] = ["dialogue", "summary"],
 ) -> Dict[str, List[str]]:
-    """_summary_
+    """Calls the inference server key-by-key and returns the translated
+    examples back.
 
     Args:
-        example (Dict[str,List[str]]): _description_
-        url (str): _description_
-        source_lang_code (str): _description_
-        target_lang_code (str): _description_
-        keys_to_be_translated (List[str], optional): _description_. Defaults to ["dialogue", "summary"].
+        example (Dict[str,List[str]]): A batch of inputs from the dataset for translation. Keys are the column names, values are the batch of text inputs
+        url (str): The URL of the inference API server.
+        source_lang_code (str): Language code for the source language
+        target_lang_code (str): Language code for the target language
+        keys_to_be_translated (List[str], optional): The keys/columns for the texts you want translated. Defaults to ["dialogue", "summary"].
 
     Returns:
-        Dict[str,List[str]]: _description_
+        Dict[str,List[str]]: Translated outputs based on the example Dict
     """
     for key in keys_to_be_translated:
         # NLLB model seems to ignore some sentences right before newline characters
-        batch_str = [sen.replace('\n','') for sen in example[key]]
+        batch_str = [sen.replace('\n', '') for sen in example[key]]
         example[key] = inference_request(url, source_lang_code, target_lang_code, batch_str)
+    return example
+
+
+def translate_sent_by_sent(
+    example: Dict[str, List[str]],
+    url: str,
+    source_lang_code: str,
+    target_lang_code: str,
+    keys_to_be_translated: List[str] = ["dialogue", "summary"],
+) -> Dict[str, List[str]]:
+    """A wrapper for call_inference_api that preprocess the input text by
+    breaking them into sentences.
+
+    Args:
+        example (Dict[str,List[str]]): A batch of inputs from the dataset for translation. Keys are the column names, values are the batch of text inputs
+        url (str): The URL of the inference API server.
+        source_lang_code (str): Language code for the source language
+        target_lang_code (str): Language code for the target language
+        keys_to_be_translated (List[str], optional): The keys/columns for the texts you want translated. Defaults to ["dialogue", "summary"].
+
+    Returns:
+        Dict[str,List[str]]: Translated outputs based on the example Dict
+    """
+    from collections import defaultdict
+
+    for k in example.keys():
+        num_inputs = len(example[k])
+        break
+
+    sentences = []
+    sentenized_example = defaultdict(list)
+
+    for k in keys_to_be_translated:
+        sentenized_example[f"{k}_pos"].append(0)
+
+    for i in range(num_inputs):
+
+        for k in example.keys():
+
+            sentences = split_text_into_sentences(text=example[k][i], language='en')
+            sentenized_example[k].extend(sentences)
+            sentenized_example[f"{k}_pos"].append(sentenized_example[f"{k}_pos"][-1] + len(sentences))
+
+    result = call_inference_api(example=sentenized_example,
+                                url=url,
+                                keys_to_be_translated=keys_to_be_translated,
+                                source_lang_code=source_lang_code,
+                                target_lang_code=target_lang_code)
+
+    for k in keys_to_be_translated:
+        merged_texts = []
+        l = 0
+        r = 1
+        while r < len(result[f"{k}_pos"]):
+            start = result[f"{k}_pos"][l]
+            end = result[f"{k}_pos"][r]
+            merged_texts.append(' '.join(result[k][start:end]))
+            l += 1
+            r += 1
+        example[k] = merged_texts
     return example
 
 
@@ -142,7 +204,7 @@ def translate_dataset_via_inference_api(
         ds = dataset[split]
         print(f"[{split}] {len(ds)=}")
         ds = ds.map(
-            lambda x: call_inference_api(
+            lambda x: translate_sent_by_sent(
                 x,
                 url=url,
                 source_lang_code=source_language_code,
@@ -181,16 +243,17 @@ def cloud_translate(example: Dict[str, str],
                     target_lang_code: str,
                     keys_to_be_translated: List[str],
                     max_tries: int = 5) -> Dict[str, str]:
-    """_summary_
+    """Translates the input example batch of texts using Google Cloud Translate
+    API.
 
     Args:
-        example (Dict[str, str]): _description_
-        target_lang_code (str): _description_
-        keys_to_be_translated (List[str]): _description_
+        example (Dict[str, str]): A batch of inputs from the dataset for translation. Keys are the column names, values are the batch of text inputs
+        target_lang_code (str): Language code for the target language
+        keys_to_be_translated (List[str]): The keys/columns for the texts you want translated.
         max_tries (int, optional): _description_. Defaults to 5.
 
     Returns:
-        Dict[str, str]: _description_
+        Dict[str, str]: Translated outputs based on the example Dict
     """
     translate_client = translate_v2.Client()
 
@@ -205,7 +268,7 @@ def cloud_translate(example: Dict[str, str],
                 time.sleep(random.uniform(0.8, 1.5))
         except Exception as e:
             print(e)
-            time.sleep(random.uniform(2,5))
+            time.sleep(random.uniform(2, 5))
 
     return example
 
@@ -361,7 +424,8 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
     else:
         source_language_code = lang_name_to_code[source_language]
     checkpoint_str = checkpoint.replace("/", "-")
-    translation_path = os.path.join(output_dir, dataset_name, f"{source_language_code}_to_{source_language_code}", checkpoint_str, template_name, date)
+    translation_path = os.path.join(output_dir, dataset_name, f"{source_language_code}_to_{source_language_code}",
+                                    checkpoint_str, template_name, date)
     Path(translation_path).mkdir(exist_ok=True, parents=True)
     for s in dataset.keys():
         dataset[s].to_csv(
