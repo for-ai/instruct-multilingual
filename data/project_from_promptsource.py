@@ -144,9 +144,11 @@ def xp3_export_dataset(
 		dataset_split = dataset[split]
 		json_data_path = os.path.join(dataset_output_dir, split)
 		os.makedirs(json_data_path, exist_ok=True)
+		__simp_dataset_name = dataset_name.replace("/", "_")
+		__simp_prompt_name = prompt_name.replace("/", "_")
 		json_data_path = os.path.join(
 			json_data_path,
-			f"foraiml_{dataset_name}_{lang}_{prompt_name}.jsonl"
+			f"foraiml_{__simp_dataset_name}_{lang}_{__simp_prompt_name}.jsonl"
 		)
 		with open(json_data_path, "w", encoding="utf-8") as file_ptr:
 			total_num_sample = len(dataset_split)
@@ -295,7 +297,7 @@ def main():
 				psrc_prompt_template_signature = "{}/{}".format(
 					dataset_name_or_path, dataset_config
 				)
-		dataset_output_dir = os.path.join(args.output_dir, dataset_name_or_path)
+		dataset_output_dir = os.path.join(args.output_dir, dataset_name_or_path.replace("/", "_"))
 		os.makedirs(dataset_output_dir, exist_ok=True)
 		if dataset_config is not None:
 			dataset_output_dir = os.path.join(dataset_output_dir, dataset_config)
