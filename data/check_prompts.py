@@ -64,7 +64,11 @@ def check(
 	lm_io = template.apply(json_example, highlight_variables=False)
 	return lm_io
 
+
 def validate(prompt_template_data):
+	"""
+	Validate a prompt template
+	"""
 	print(json.dumps(prompt_template_data, indent=4))
 	dataset_info = prompt_template_data['What dataset do you pick?']
 	dataset_signature = dataset_mapper[dataset_info]
@@ -89,10 +93,12 @@ def validate(prompt_template_data):
 					print(f"Validating dataset_signature:dataset_subset:split={dataset_signature}:{dataset_subset}:{split} with prompt template... [FAILED]")
 					raise ValueError("Templating Error.")
 				break
-	print(dataset_signature, dataset_subsets)
+
 
 def parse(prompt_file_path, validate_rows):
-	print(validate_rows)
+	"""
+	Parse list of rows menntioned in validate_rows. 
+	"""
 	_prmompt_dict, dt_structure, idx_to_header = {}, {}, {}
 	with open(prompt_file_path, 'r') as csvfile:
 		csvreader = csv.reader(csvfile)
@@ -101,12 +107,13 @@ def parse(prompt_file_path, validate_rows):
 				for idx, dt in enumerate(row):
 					dt_structure[dt] = {}
 					idx_to_header[idx] = dt
-			if row_idx+1 in validate_rows:
+			if row_idx+1 in validate_rows: # 1 based indexing
 				sample = copy.deepcopy(dt_structure)
 				for idx, dt in enumerate(row):
 					sample[idx_to_header[idx]] = dt
 				_prmompt_dict[ row_idx+1 ] = sample
 	return _prmompt_dict
+
 
 def main():
 	parser = argparse.ArgumentParser()
@@ -132,7 +139,7 @@ def main():
 		nargs='*',
 		default=[3],
 		type=int,
-		help="Overwrite existing prompt file prompts.csv."
+		help="List of row indices (1-based indexing ). The row mentioned here will indicate the row of `--form_path` spreadsheet."
 	)
 	args = parser.parse_args()
 	prompt_file_path = f"{args.prompt_dir}/prompts.csv"
