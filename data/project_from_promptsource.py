@@ -21,8 +21,7 @@ def export_dataset(
 	prompt_template: Type[Template],
 	dataset: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
 	add_source_metadata: bool = False,
-	highlight_variables: bool = False,
-	lang: str = 'en'
+	highlight_variables: bool = False
 ) -> str:
 	"""
 	Given a `hf-dataset` (arg: dataset) and a prompt template (arg: prompt_template),
@@ -38,7 +37,6 @@ def export_dataset(
 		dataset (Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]): huggingface dataset that will be transformed into an instruction dataset.
 		add_source_metadata (bool = False): If True, all the data column from the args:dataset will be saved as a meta information with the instruction dataset.
 		highlight_variables (bool = False): If True, prompt tokens and dataset tokens will be highlighted differently. This metadata will be saved as  `highlighted_source` & `highlighted_target`.
-		lang (str = 'en'): language name of the dataset
 	"""
 	splits = list(dataset.keys())
 	prompt_name = prompt_template.get_name()
@@ -51,7 +49,7 @@ def export_dataset(
 			(psrc_prompt_template_signature + "." + prompt_name)
 			.replace("/", "_")
 			.replace(" ", "_")
-			+ f"_{lang}.jsonl",
+			+ ".jsonl",
 		)
 		with open(json_data_path, "w", encoding="utf-8") as file_ptr:
 			total_num_sample = len(dataset_split)
