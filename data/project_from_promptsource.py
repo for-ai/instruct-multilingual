@@ -37,7 +37,7 @@ def export_dataset(
 		prompt_template (Type[Template]): Transformation/projection module that will take a sample from arg:dataset and transform it to an instruction.
 		dataset (Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]): huggingface dataset that will be transformed into an instruction dataset.
 		add_source_metadata (bool = False): If True, all the data column from the args:dataset will be saved as a meta information with the instruction dataset.
-		add_source_metadata (bool = False): If True, prompt tokens and dataset tokens will be highlighted differently. This metadata will be saved as  `highlighted_source` & `highlighted_target`.
+		highlight_variables (bool = False): If True, prompt tokens and dataset tokens will be highlighted differently. This metadata will be saved as  `highlighted_source` & `highlighted_target`.
 		lang (str = 'en'): language name of the dataset
 	"""
 	splits = list(dataset.keys())
@@ -122,8 +122,6 @@ def xp3_export_dataset(
 	psrc_prompt_template_signature: str,
 	prompt_template: Type[Template],
 	dataset: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset],
-	add_source_metadata: bool = False,
-	highlight_variables: bool = False,
 	lang: str = 'en'
 ) -> str:
 	"""
@@ -138,8 +136,6 @@ def xp3_export_dataset(
 		psrc_prompt_template_signature (str): Name of the dataset & dataset-config for which prompts are written for.
 		prompt_template (Type[Template]): Transformation/projection module that will take a sample from arg:dataset and transform it to an instruction.
 		dataset (Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]): huggingface dataset that will be transformed into an instruction dataset.
-		add_source_metadata (bool = False): If True, all the data column from the args:dataset will be saved as a meta information with the instruction dataset.
-		add_source_metadata (bool = False): If True, prompt tokens and dataset tokens will be highlighted differently. This metadata will be saved as  `highlighted_source` & `highlighted_target`.
 		lang (str = 'en'): language name of the dataset
 	"""
 	splits = list(dataset.keys())
