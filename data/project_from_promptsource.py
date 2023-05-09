@@ -305,16 +305,26 @@ def main():
 		for prompt_name in prompt_names:
 			prompt_template = prompt_templates[prompt_name]
 			# pre-calculate the arguments for multiprocesssing.
-			prompted_sample_gen_io_tuple = (
-				dataset_output_dir,
-				dataset_name_or_path,
-				dataset_config,
-				psrc_prompt_template_signature,
-				prompt_template,
-				dataset,
-				args.add_source_metadata,
-				args.highlight_variables,
-			)
+			if args.xp3_format:
+				prompted_sample_gen_io_tuple = (
+					dataset_output_dir,
+					dataset_name_or_path,
+					dataset_config,
+					psrc_prompt_template_signature,
+					prompt_template,
+					dataset
+				)
+			else:
+				prompted_sample_gen_io_tuple = (
+					dataset_output_dir,
+					dataset_name_or_path,
+					dataset_config,
+					psrc_prompt_template_signature,
+					prompt_template,
+					dataset,
+					args.add_source_metadata,
+					args.highlight_variables,
+				)
 			prompted_sample_gen_io_tuple_list.append(prompted_sample_gen_io_tuple)
 
 	# Projecting data using multiprocessing.
