@@ -132,7 +132,7 @@ def main():
 		nargs='*',
 		default=[3],
 		type=int,
-		help="Overwrite eexisting prompt file prompts.csv."
+		help="Overwrite existing prompt file prompts.csv."
 	)
 	args = parser.parse_args()
 	prompt_file_path = f"{args.prompt_dir}/prompts.csv"
