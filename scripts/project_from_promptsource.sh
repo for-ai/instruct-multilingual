@@ -1,20 +1,20 @@
-# The native format with a lots of metadata
-DUMP_FOLDER='./raw'
-SRC_DATA_FOLDER=$DUMP_FOLDER/project_from_promptsource
-mkdir -p $SRC_DATA_FOLDER
-mkdir -p $SRC_DATA_FOLDER/cache
+# # The native format with a lots of metadata
+# DUMP_FOLDER='./raw'
+# SRC_DATA_FOLDER=$DUMP_FOLDER/project_from_promptsource
+# mkdir -p $SRC_DATA_FOLDER
+# mkdir -p $SRC_DATA_FOLDER/cache
 
-python data/project_from_promptsource.py \
---dataset-name-or-paths nq_open \
---dataset-configs None \
---prompt-templates-configs None \
---cache-dir $SRC_DATA_FOLDER/cache \
---output-dir $SRC_DATA_FOLDER \
---highlight-variables \
---add-source-metadata \
---num-proc 16
+# python data/project_from_promptsource.py \
+# --dataset-name-or-paths nq_open \
+# --dataset-configs None \
+# --prompt-templates-configs None \
+# --cache-dir $SRC_DATA_FOLDER/cache \
+# --output-dir $SRC_DATA_FOLDER \
+# --highlight-variables \
+# --add-source-metadata \
+# --num-proc 16
 
-# # The xP3 format
+# # # The xP3 format
 # DUMP_FOLDER='./raw'
 # SRC_DATA_FOLDER=$DUMP_FOLDER/project_from_promptsource
 # mkdir -p $SRC_DATA_FOLDER
@@ -28,3 +28,17 @@ python data/project_from_promptsource.py \
 # --output-dir $SRC_DATA_FOLDER \
 # --xp3-format \
 # --num-proc 16
+
+# Project custom data
+DUMP_FOLDER='./raw'
+SRC_DATA_FOLDER=$DUMP_FOLDER/project_from_promptsource
+mkdir -p $SRC_DATA_FOLDER
+mkdir -p $SRC_DATA_FOLDER/cache
+
+python data/project_from_promptsource.py \
+--dataset-name-or-paths shmuhammad/AfriSenti-twitter-sentiment \
+--dataset-configs amh \
+--prompt-templates-configs None \
+--cache-dir $SRC_DATA_FOLDER/cache \
+--output-dir $SRC_DATA_FOLDER \
+--num-proc 16
