@@ -47,3 +47,28 @@ python -m instructmultilingual.translate \
           --source_language="English" \
           --target_language="Egyptian Arabic"
 ```
+
+## Translate an instructional dataset from xP3 (or any dataset repo from HuggingFace Hub)
+
+An example of using `translate_dataset_from_huggingface_hub` to translate PIQA with the `finish_sentence_with_correct_choice` template into languages used by Multilingual T5 (mT5) model
+
+```python
+from instructmultilingual.translate_datasets import translate_dataset_from_huggingface_hub
+
+translate_dataset_from_huggingface_hub(
+    repo_id = "bigscience/xP3",
+    train_set = ["en/xp3_piqa_None_train_finish_sentence_with_correct_choice.jsonl"],
+    validation_set = ["en/xp3_piqa_None_validation_finish_sentence_with_correct_choice.jsonl"],
+    test_set = [],
+    dataset_name="PIQA",
+    template_name="finish_sentence_with_correct_choice",
+    splits=["train", "validation"],
+    translate_keys=["inputs", "targets"],
+    url= "http://localhost:8000/translate",
+    output_dir= "/home/weiyi/instruct-multilingual/datasets",
+    source_language= "English",
+    checkpoint="facebook/nllb-200-3.3B",
+    num_proc= 8,
+)
+```
+
