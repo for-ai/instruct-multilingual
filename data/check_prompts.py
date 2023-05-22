@@ -10,7 +10,20 @@ from promptsource.templates import Template, LANGUAGES
 from .data_stat import SERIES_A_DATASET_NAME_DICT
 
 dataset_mapper = {
-	"AfriSenti-twitter-sentiment https://huggingface.co/datasets/shmuhammad/AfriSenti-twitter-sentiment": "shmuhammad/AfriSenti-twitter-sentiment" 
+	"AfriSenti-twitter-sentiment https://huggingface.co/datasets/shmuhammad/AfriSenti-twitter-sentiment": "shmuhammad/AfriSenti-twitter-sentiment",
+	"Joke-explanation https://huggingface.co/datasets/theblackcat102/joke_explaination": "theblackcat102/joke_explaination",
+	"Language Identification https://huggingface.co/datasets/papluca/language-identification": "papluca/language-identification",
+	"Mafand - a machine translation task https://huggingface.co/datasets/masakhane/mafand": "sbmaruf/forai_ml_masakhane_mafand",
+	"Masakhanews https://github.com/masakhane-io/masakhane-news": "masakhane/masakhanews",
+	"Mintaka https://huggingface.co/datasets/AmazonScience/mintaka":"AmazonScience/mintaka",
+	"NarrativeQA https://huggingface.co/datasets/narrativeqa": "narrativeqa",
+	"NusaX - sentiment classification https://huggingface.co/datasets/indonlp/NusaX-senti": "indonlp/NusaX-senti",
+	"qrecc https://huggingface.co/datasets/svakulenk0/qrecc": "svakulenk0/qrecc",
+	"SODA https://huggingface.co/datasets/allenai/soda": "allenai/soda",
+	"TED https://huggingface.co/datasets/ted_talks_iwslt": "sbmaruf/forai_ml-ted_talk_iwslt",
+	"WikiCatSum https://huggingface.co/datasets/GEM/wiki_cat_sum": "GEM/wiki_cat_sum",
+	"X-CSQA https://huggingface.co/datasets/xcsr": "xcsr",
+	"xlel_wd https://huggingface.co/datasets/adithya7/xlel_wd": "adithya7/xlel_wd"
 }
 
 def check(
@@ -65,36 +78,42 @@ def check(
 	return lm_io
 
 
-def validate(prompt_template_data):
+def validate(prompt_template_data, row_id):
 	"""
 	Validate a prompt template
 	"""
-	print(json.dumps(prompt_template_data, indent=4))
-	dataset_info = prompt_template_data['What dataset do you pick?']
-	dataset_signature = dataset_mapper[dataset_info]
-	dataset_subsets = SERIES_A_DATASET_NAME_DICT[dataset_signature]
-	for dataset_subset in dataset_subsets:
-		dataset = datasets.load_dataset(dataset_signature, dataset_subset)
-		splits = dataset.keys()
-		for split in splits:
-			data = dataset[split]
-			model_input = prompt_template_data['Input to the model']
-			model_exp_output = prompt_template_data['Model\'s expected output']
-			for sample in data:
-				lm_io = check(
-					json_example = json.dumps(sample),
-					template_name = prompt_template_data['Name'],
-					jinja_template = f"{model_input} ||| {model_exp_output}",
-					template_reference = prompt_template_data['Discord username'],
-				)
-				if len(lm_io) == 2:
-					print(f"Validating dataset_signature:dataset_subset:split={dataset_signature}:{dataset_subset}:{split} with prompt template... [DONE]")
-				else:
-					print(f"Validating dataset_signature:dataset_subset:split={dataset_signature}:{dataset_subset}:{split} with prompt template... [FAILED]")
-					raise ValueError("Templating Error.")
-				break
-
-
+	try:
+		print(json.dumps(prompt_template_data, indent=4))
+		dataset_info = prompt_template_data['What dataset do you pick?']
+		if dataset_info not in dataset_mapper:
+			dataset_signature = dataset_info.split()[0].lower()
+		else:
+			dataset_signature = dataset_mapper[dataset_info]
+		dataset_subsets = SERIES_A_DATASET_NAME_DICT[dataset_signature]
+		for dataset_subset in dataset_subsets:
+			dataset = datasets.load_dataset(dataset_signature, dataset_subset)
+			splits = dataset.keys()
+			for split in splits:
+				data = dataset[split]
+				model_input = prompt_template_data['Input to the model']
+				model_exp_output = prompt_template_data['Model\'s expected output']
+				for sample in data:
+					lm_io = check(
+						json_example = json.dumps(sample),
+						template_name = prompt_template_data['Name'],
+						jinja_template = f"{model_input} ||| {model_exp_output}",
+						template_reference = prompt_template_data['Discord username'],
+					)
+					if len(lm_io) == 2:
+						print(f"Validating dataset_signature:dataset_subset:split={dataset_signature}:{dataset_subset}:{split} with prompt template... [DONE]")
+					else:
+						print(f"Validating dataset_signature:dataset_subset:split={dataset_signature}:{dataset_subset}:{split} with prompt template... [FAILED]")
+						raise ValueError("Templating Error.")
+					break
+	except:
+		print(f"Error in row {row_id}")
+		raise
+	
 def parse(prompt_file_path, validate_rows):
 	"""
 	Parse list of rows menntioned in validate_rows. 
@@ -152,7 +171,7 @@ def main():
 	prompt_dict = parse(prompt_file_path, args.validate_rows)
 	for row_id, prompt_template_data in prompt_dict.items():
 		print(f"Validating row {row_id} ...")
-		validate(prompt_template_data)
+		validate(prompt_template_data, row_id)
 
 
 
