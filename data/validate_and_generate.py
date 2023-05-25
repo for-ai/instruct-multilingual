@@ -118,10 +118,10 @@ def create_name_with_hierarchy(output_dir, dataset_signature, dataset_subset, sp
 	"""
 	<original-dataset-name>/<dataset_subset>__<split_name>/template-generation/<template>/<date>/foraiml__<original-dataset-name>__<dataset_subset>__<split>__<dataset_lang>__<prompt_lang>.jsonl
 	"""
+	split_lang = SERIES_A_DATASET_NAME_DICT[dataset_signature][dataset_subset]
 	dataset_signature = dataset_signature.replace("/", "_").replace("\\","")
 	dataset_uid = f"{dataset_signature}" 
 	file_path = os.path.join(output_dir, dataset_uid)
-	split_lang = SERIES_A_DATASET_NAME_DICT[dataset_signature][dataset_subset]
 	split_uid = f"{dataset_subset}__{split_name}"
 	file_path = os.path.join(file_path, split_uid) 
 	file_path = os.path.join(file_path, "template-generation") 
