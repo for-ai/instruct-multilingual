@@ -1,0 +1,670 @@
+{
+    "af": [
+        [
+            "afr_Latn",
+            "Afrikaans"
+        ]
+    ],
+    "sq": [
+        [
+            "als_Latn",
+            "Tosk Albanian"
+        ]
+    ],
+    "am": [
+        [
+            "amh_Ethi",
+            "Amharic"
+        ]
+    ],
+    "ar": [
+        [
+            "ace_Arab",
+            "Acehnese (Arabic script)"
+        ],
+        [
+            "acm_Arab",
+            "Mesopotamian Arabic"
+        ],
+        [
+            "acq_Arab",
+            "Ta\u2019izzi-Adeni Arabic"
+        ],
+        [
+            "aeb_Arab",
+            "Tunisian Arabic"
+        ],
+        [
+            "ajp_Arab",
+            "South Levantine Arabic"
+        ],
+        [
+            "apc_Arab",
+            "North Levantine Arabic"
+        ],
+        [
+            "arb_Arab",
+            "Modern Standard Arabic"
+        ],
+        [
+            "arb_Latn",
+            "Modern Standard Arabic (Romanized)"
+        ],
+        [
+            "ars_Arab",
+            "Najdi Arabic"
+        ],
+        [
+            "ary_Arab",
+            "Moroccan Arabic"
+        ],
+        [
+            "arz_Arab",
+            "Egyptian Arabic"
+        ],
+        [
+            "bjn_Arab",
+            "Banjar (Arabic script)"
+        ],
+        [
+            "kas_Arab",
+            "Kashmiri (Arabic script)"
+        ],
+        [
+            "knc_Arab",
+            "Central Kanuri (Arabic script)"
+        ],
+        [
+            "min_Arab",
+            "Minangkabau (Arabic script)"
+        ]
+    ],
+    "hy": [
+        [
+            "hye_Armn",
+            "Armenian"
+        ]
+    ],
+    "az": [
+        [
+            "azb_Arab",
+            "South Azerbaijani"
+        ],
+        [
+            "azj_Latn",
+            "North Azerbaijani"
+        ]
+    ],
+    "eu": [
+        [
+            "eus_Latn",
+            "Basque"
+        ]
+    ],
+    "be": [
+        [
+            "bel_Cyrl",
+            "Belarusian"
+        ]
+    ],
+    "bn": [
+        [
+            "ben_Beng",
+            "Bengali"
+        ],
+        [
+            "mni_Beng",
+            "Meitei (Bengali script)"
+        ]
+    ],
+    "bg": [
+        [
+            "bul_Cyrl",
+            "Bulgarian"
+        ]
+    ],
+    "my": [
+        [
+            "mya_Mymr",
+            "Burmese"
+        ]
+    ],
+    "ca": [
+        [
+            "cat_Latn",
+            "Catalan"
+        ]
+    ],
+    "ceb": [
+        [
+            "ceb_Latn",
+            "Cebuano"
+        ]
+    ],
+    "zh": [
+        [
+            "yue_Hant",
+            "Yue Chinese"
+        ],
+        [
+            "zho_Hans",
+            "Chinese (Simplified)"
+        ],
+        [
+            "zho_Hant",
+            "Chinese (Traditional)"
+        ]
+    ],
+    "cs": [
+        [
+            "ces_Latn",
+            "Czech"
+        ]
+    ],
+    "da": [
+        [
+            "dan_Latn",
+            "Danish"
+        ]
+    ],
+    "nl": [
+        [
+            "nld_Latn",
+            "Dutch"
+        ]
+    ],
+    "en": [
+        [
+            "eng_Latn",
+            "English"
+        ]
+    ],
+    "eo": [
+        [
+            "epo_Latn",
+            "Esperanto"
+        ]
+    ],
+    "et": [
+        [
+            "est_Latn",
+            "Estonian"
+        ]
+    ],
+    "fi": [
+        [
+            "fin_Latn",
+            "Finnish"
+        ]
+    ],
+    "fr": [
+        [
+            "fra_Latn",
+            "French"
+        ]
+    ],
+    "gl": [
+        [
+            "glg_Latn",
+            "Galician"
+        ]
+    ],
+    "ka": [
+        [
+            "kat_Geor",
+            "Georgian"
+        ]
+    ],
+    "de": [
+        [
+            "deu_Latn",
+            "German"
+        ]
+    ],
+    "el": [
+        [
+            "ell_Grek",
+            "Greek"
+        ]
+    ],
+    "gu": [
+        [
+            "guj_Gujr",
+            "Gujarati"
+        ]
+    ],
+    "ht": [
+        [
+            "hat_Latn",
+            "Haitian Creole"
+        ]
+    ],
+    "ha": [
+        [
+            "hau_Latn",
+            "Hausa"
+        ]
+    ],
+    "iw": [
+        [
+            "heb_Hebr",
+            "Hebrew"
+        ]
+    ],
+    "hi": [
+        [
+            "hin_Deva",
+            "Hindi"
+        ]
+    ],
+    "hu": [
+        [
+            "hun_Latn",
+            "Hungarian"
+        ]
+    ],
+    "is": [
+        [
+            "isl_Latn",
+            "Icelandic"
+        ]
+    ],
+    "ig": [
+        [
+            "ibo_Latn",
+            "Igbo"
+        ]
+    ],
+    "id": [
+        [
+            "ind_Latn",
+            "Indonesian"
+        ]
+    ],
+    "ga": [
+        [
+            "gle_Latn",
+            "Irish"
+        ]
+    ],
+    "it": [
+        [
+            "ita_Latn",
+            "Italian"
+        ]
+    ],
+    "ja": [
+        [
+            "jpn_Jpan",
+            "Japanese"
+        ]
+    ],
+    "jv": [
+        [
+            "jav_Latn",
+            "Javanese"
+        ]
+    ],
+    "kn": [
+        [
+            "kan_Knda",
+            "Kannada"
+        ]
+    ],
+    "kk": [
+        [
+            "kaz_Cyrl",
+            "Kazakh"
+        ]
+    ],
+    "km": [
+        [
+            "khm_Khmr",
+            "Khmer"
+        ]
+    ],
+    "ko": [
+        [
+            "kor_Hang",
+            "Korean"
+        ]
+    ],
+    "ku": [
+        [
+            "ckb_Arab",
+            "Central Kurdish"
+        ],
+        [
+            "kmr_Latn",
+            "Northern Kurdish"
+        ]
+    ],
+    "ky": [
+        [
+            "kir_Cyrl",
+            "Kyrgyz"
+        ]
+    ],
+    "lo": [
+        [
+            "lao_Laoo",
+            "Lao"
+        ]
+    ],
+    "la": [
+        [
+            "ace_Latn",
+            "Acehnese (Latin script)"
+        ],
+        [
+            "bjn_Latn",
+            "Banjar (Latin script)"
+        ],
+        [
+            "knc_Latn",
+            "Central Kanuri (Latin script)"
+        ],
+        [
+            "min_Latn",
+            "Minangkabau (Latin script)"
+        ],
+        [
+            "taq_Latn",
+            "Tamasheq (Latin script)"
+        ]
+    ],
+    "lv": [
+        [
+            "lvs_Latn",
+            "Standard Latvian"
+        ]
+    ],
+    "lt": [
+        [
+            "lit_Latn",
+            "Lithuanian"
+        ]
+    ],
+    "lb": [
+        [
+            "ltz_Latn",
+            "Luxembourgish"
+        ]
+    ],
+    "mk": [
+        [
+            "mkd_Cyrl",
+            "Macedonian"
+        ]
+    ],
+    "mg": [
+        [
+            "plt_Latn",
+            "Plateau Malagasy"
+        ]
+    ],
+    "ms": [
+        [
+            "mal_Mlym",
+            "Malayalam"
+        ],
+        [
+            "zsm_Latn",
+            "Standard Malay"
+        ]
+    ],
+    "ml": [
+        [
+            "mal_Mlym",
+            "Malayalam"
+        ]
+    ],
+    "mt": [
+        [
+            "mlt_Latn",
+            "Maltese"
+        ]
+    ],
+    "mi": [
+        [
+            "mri_Latn",
+            "Maori"
+        ]
+    ],
+    "mr": [
+        [
+            "mar_Deva",
+            "Marathi"
+        ]
+    ],
+    "mn": [
+        [
+            "khk_Cyrl",
+            "Halh Mongolian"
+        ]
+    ],
+    "ne": [
+        [
+            "npi_Deva",
+            "Nepali"
+        ]
+    ],
+    "no": [
+        [
+            "nno_Latn",
+            "Norwegian Nynorsk"
+        ],
+        [
+            "nob_Latn",
+            "Norwegian Bokm\u00e5l"
+        ]
+    ],
+    "ps": [
+        [
+            "pbt_Arab",
+            "Southern Pashto"
+        ]
+    ],
+    "fa": [
+        [
+            "pes_Arab",
+            "Western Persian"
+        ]
+    ],
+    "pl": [
+        [
+            "pol_Latn",
+            "Polish"
+        ]
+    ],
+    "pt": [
+        [
+            "por_Latn",
+            "Portuguese"
+        ]
+    ],
+    "ro": [
+        [
+            "ron_Latn",
+            "Romanian"
+        ]
+    ],
+    "ru": [
+        [
+            "rus_Cyrl",
+            "Russian"
+        ]
+    ],
+    "sm": [
+        [
+            "smo_Latn",
+            "Samoan"
+        ]
+    ],
+    "gd": [
+        [
+            "gla_Latn",
+            "Scottish Gaelic"
+        ]
+    ],
+    "sr": [
+        [
+            "srp_Cyrl",
+            "Serbian"
+        ]
+    ],
+    "sn": [
+        [
+            "sna_Latn",
+            "Shona"
+        ]
+    ],
+    "sd": [
+        [
+            "snd_Arab",
+            "Sindhi"
+        ]
+    ],
+    "si": [
+        [
+            "sin_Sinh",
+            "Sinhala"
+        ]
+    ],
+    "sk": [
+        [
+            "slk_Latn",
+            "Slovak"
+        ]
+    ],
+    "sl": [
+        [
+            "slv_Latn",
+            "Slovenian"
+        ]
+    ],
+    "so": [
+        [
+            "som_Latn",
+            "Somali"
+        ]
+    ],
+    "st": [
+        [
+            "nso_Latn",
+            "Northern Sotho"
+        ],
+        [
+            "sot_Latn",
+            "Southern Sotho"
+        ]
+    ],
+    "es": [
+        [
+            "spa_Latn",
+            "Spanish"
+        ]
+    ],
+    "su": [
+        [
+            "sun_Latn",
+            "Sundanese"
+        ]
+    ],
+    "sw": [
+        [
+            "swh_Latn",
+            "Swahili"
+        ]
+    ],
+    "sv": [
+        [
+            "swe_Latn",
+            "Swedish"
+        ]
+    ],
+    "tg": [
+        [
+            "tgk_Cyrl",
+            "Tajik"
+        ]
+    ],
+    "ta": [
+        [
+            "tam_Taml",
+            "Tamil"
+        ]
+    ],
+    "te": [
+        [
+            "tel_Telu",
+            "Telugu"
+        ]
+    ],
+    "th": [
+        [
+            "tha_Thai",
+            "Thai"
+        ]
+    ],
+    "tr": [
+        [
+            "tur_Latn",
+            "Turkish"
+        ]
+    ],
+    "uk": [
+        [
+            "ukr_Cyrl",
+            "Ukrainian"
+        ]
+    ],
+    "ur": [
+        [
+            "urd_Arab",
+            "Urdu"
+        ]
+    ],
+    "uz": [
+        [
+            "uzn_Latn",
+            "Northern Uzbek"
+        ]
+    ],
+    "vi": [
+        [
+            "vie_Latn",
+            "Vietnamese"
+        ]
+    ],
+    "cy": [
+        [
+            "cym_Latn",
+            "Welsh"
+        ]
+    ],
+    "xh": [
+        [
+            "xho_Latn",
+            "Xhosa"
+        ]
+    ],
+    "yi": [
+        [
+            "ydd_Hebr",
+            "Eastern Yiddish"
+        ]
+    ],
+    "yo": [
+        [
+            "yor_Latn",
+            "Yoruba"
+        ]
+    ],
+    "zu": [
+        [
+            "zul_Latn",
+            "Zulu"
+        ]
+    ]
+}
