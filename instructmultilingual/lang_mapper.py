@@ -70,6 +70,18 @@ def get_mt5_2_nllb_mapper(mt5_langs_name_pair, nllb_lang_names):
 			MT5_2_NLLB[short_lang] = names_found
 	return MT5_2_NLLB
 
+def iso639_to_single_flores(MT5_2_NLLB_ONE_TO_MANY):
+	MT5_2_NLLB_ONE_TO_ONE = {}
+	cnt = 0
+	for k, v in MT5_2_NLLB_ONE_TO_MANY.items():
+		if len(v) == 1:
+			MT5_2_NLLB_ONE_TO_ONE[k] = v[0][0]
+		else:
+			print(k, v)
+			cnt += 1
+	print(cnt)
+	return MT5_2_NLLB_ONE_TO_ONE
+
 def main():
 	mt5_full_lang_names = set([full_lang for (full_lang, _) in mt5_langs_name_pair])
 	assert len(mt5_full_lang_names) == 101
@@ -80,10 +92,13 @@ def main():
 	ISO_LANG_NAME_LIST = [lag_obj.name for lag_obj in list(iso_languages)]
 	
 	test_iso_validity(ISO_LANG_NAME_LIST)
-	MT5_2_NLLB = get_mt5_2_nllb_mapper(mt5_langs_name_pair, nllb_lang_names)
-	# print(json.dumps(MT5_2_NLLB, indent=4))
-	with open("MT5_2_NLLB.json", "w") as file_ptr:
-		file_ptr.write(json.dumps(MT5_2_NLLB, indent=4))
+	MT5_2_NLLB_ONE_TO_MANY = get_mt5_2_nllb_mapper(mt5_langs_name_pair, nllb_lang_names)
+	with open("data/MT5_2_NLLB_ONE_TO_MANY.json", "w") as file_ptr:
+		file_ptr.write(json.dumps(MT5_2_NLLB_ONE_TO_MANY, indent=4))
+
+	MT5_2_NLLB_ONE_TO_ONE = iso639_to_single_flores(MT5_2_NLLB_ONE_TO_MANY)
+	with open("data/MT5_2_NLLB_ONE_TO_ONE.json", "w") as file_ptr:
+		file_ptr.write(json.dumps(MT5_2_NLLB_ONE_TO_ONE, indent=4))
 	
 if __name__ == "__main__":
 	main()
