@@ -1,7 +1,79 @@
 python3 -m data.validate_and_generate \
 --prompt-dir data \
---output-dir "dumped" \
---generate \
---num-proc 8
+--output-dir "GEM_wiki_cat_sum" \
+--add-template-metadata \
+--num-proc 16 \
+--select-rows 155 156 157 158 159 160 161 162 \
+--generate
 
-# 3 5 8 10 15 17 18  19 21 25 27 28 29 30 31 32 34 38 39 40 42 45 46 47 48 53 56 58 61 64 66 67 68 71 72 74 75 76 83 84 86 87 88 89 92 93 94 95 111 116 118 121 122 124 125 126 128 129 132 133 134 135 136 137 138 140 141 142 143
+python3 -m data.validate_and_generate \
+--prompt-dir data \
+--output-dir "AmazonScience_mintaka" \
+--add-template-metadata \
+--num-proc 16 \
+--select-rows 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 \
+--generate
+
+python3 -m data.validate_and_generate \
+--prompt-dir data \
+--output-dir "exams" \
+--add-template-metadata \
+--num-proc 16 \
+--select-rows 26 \
+--generate
+
+python3 -m data.validate_and_generate \
+--prompt-dir data \
+--output-dir "adithya7_xlel_wd" \
+--add-template-metadata \
+--num-proc 16 \
+--select-rows 168 169 170 171 172 173 174 175 176 \
+--generate
+
+python3 -m data.validate_and_generate \
+--prompt-dir data \
+--output-dir "xcsr" \
+--add-template-metadata \
+--num-proc 16 \
+--select-rows 163 164 165 166 167 \
+--generate
+
+python3 -m data.validate_and_generate \
+--prompt-dir data \
+--output-dir "wiki_split" \
+--add-template-metadata \
+--num-proc 16 \
+--select-rows 152 153 154 \
+--generate
+
+python3 -m data.validate_and_generate \
+--prompt-dir data \
+--output-dir "TurkuNLP_turku_paraphrase_corpus" \
+--add-template-metadata \
+--num-proc 16 \
+--select-rows 144 145 \
+--generate
+
+python3 -m data.validate_and_generate \
+--prompt-dir data \
+--output-dir "soda" \
+--add-template-metadata \
+--num-proc 16 \
+--select-rows 136 138 139 140 141 142 \
+--generate
+
+python3 -m data.validate_and_generate \
+--prompt-dir data \
+--output-dir "theblackcat102_joke_explaination" \
+--add-template-metadata \
+--num-proc 16 \
+--select-rows 27 28 29 30 31 33 37  \
+--generate
+
+python3 -m data.validate_and_generate \
+--prompt-dir data \
+--output-dir "allenai_scirepeval" \
+--add-template-metadata \
+--num-proc 16 \
+--select-rows 15 17 18 19 21 \
+--generate
