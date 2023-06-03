@@ -497,13 +497,13 @@ def main():
         type=str,
         default="https://docs.google.com/spreadsheets/d/10bCwOhM8zKNkqKi54gIvdwrR44YlWQFV9fpGm7acHv8/export?format=csv&id=10bCwOhM8zKNkqKi54gIvdwrR44YlWQFV9fpGm7acHv8&gid=726399306",
         help="Path (https://docs.google.com/spreadsheets/d/...) of the google sheet. See the default value for an example."
-        "It will be downloaded as prompt.csv file in --prompt-dir",
+        " It will be downloaded as prompt.csv file in --prompt-dir",
     )
     parser.add_argument(
         "--overwrite",
         action="store_true",
-        help="By default the code doesn't attempt to download prompt spreadsheet it the file is already downloaded."
-        "If this flag is activates, it will overwrite (make it prompt.csv.old) existing prompt file prompts.csv.",
+        help="By default the code doesn't attempt to download prompt spreadsheet (downloaded by --form_path argument) if the file is already downloaded."
+        " If this flag is activates, it will overwrite (make it prompt.csv.old) existing prompt file prompts.csv.",
     )
     parser.add_argument(
         "--prompt-dir",
@@ -520,22 +520,22 @@ def main():
         "--generate",
         action="store_true",
         help="Generate projected samples."
-        "If this flag is activate the whole dataset will be generated. If not then only a single sample will be generate for audit purpose.",
+        " If this flag is activate the whole dataset will be generated. If not then only a single sample will be generate for audit purpose.",
     )
     parser.add_argument(
         "--start-row-id",
         default=0,
         type=int,
         help="The row id (from prompt.csv file) from where we will start parsing data."
-        "When testing new datasets/code, this flag may help ignoring some rows from prompt.csv file",
+        " When testing new datasets/code, this flag may help ignoring some rows from prompt.csv file",
     )
     parser.add_argument(
         "--select-rows",
         nargs="*",
         default=[],
         type=int,
-        help="List of row indices (1-based indexing ). The row mentioned here will indicate the row of `--form_path` spreadsheet."
-        "If empty, it will select all the rows.",
+        help="List of row indices (1-based indexing ). The row mentioned here will indicate the row of `--form_path` spreadsheet (saves to `args.prompt_dir/prompts.csv`)."
+        " If empty, it will select all the rows.",
     )
     parser.add_argument(
         "--add-template-metadata",
