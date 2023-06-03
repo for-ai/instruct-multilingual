@@ -191,7 +191,7 @@ def check(
         metadata=metadata,
         answer_choices=answer_choices,
     )
-    lm_io = template.apply(json_example, highlight_variables=False)
+    lm_io = template.apply(json_example, highlight_variables=False, truncate=False)
     return lm_io
 
 
