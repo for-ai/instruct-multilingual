@@ -367,6 +367,8 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
                                            source_language: str = "English",
                                            checkpoint: str = "facebook/nllb-200-3.3B",
                                            num_proc: int = 8,
+                                           file_ext: str = "json",
+                                           columns_to_remove: List[str] = [],
                                            translation_lang_codes: List[str] = T5_LANG_CODES,
                                            exclude_languages: Set[str] = {"English"}) -> None:
     """A wrapper for using translate_dataset_via_api specifically on dataset
@@ -386,6 +388,8 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
         source_language (str, optional): Languague of the original text. Defaults to "English".
         checkpoint (str, optional): Name of the checkpoint used for naming. Defaults to "facebook/nllb-200-3.3B".
         num_proc (int, optional): Number of processes to use for processing the dataset. Defaults to 8.
+        file_ext (str, optional): file extension for the downloaded dataset files. Defaults to "json".
+        columns_to_remove (List[str], optional): Remove the specified columns from the original dataset. Defaults to [].
         translation_lang_codes (List[str], optional): List of Flores-200 language codes to translate to. Defaults to T5_LANG_CODES.
         exclude_languages (Set[str], optional): Set of languages to exclude. Defaults to {"English"}.
     """
@@ -415,7 +419,9 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
                 pth = os.path.join(temp_split_dir, f)
                 dataset_template[split].append(pth)
 
-    dataset = load_dataset('json', data_files=dataset_template)
+    dataset = load_dataset(file_ext, data_files=dataset_template)
+    if len(columns_to_remove) > 0:
+        dataset = dataset.remove_columns(columns_to_remove)
 
     # Make a copy of the source dataset inside translated datasets as well
     date = datetime.today().strftime('%Y-%m-%d')
