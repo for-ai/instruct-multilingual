@@ -376,21 +376,21 @@ def main():
                     for sample in dt[split]:
                         assert len(sample["question"]["choices"]["label"]) == 5
 
-    if args.output_dir != "None":
-        file_name = os.path.join(args.output_dir, "stat") + f".{args.export_format}"
-        if args.export_format == "json":
-            with open(file_name, "w") as file_ptr:
-                file_ptr.write(f"{json.dumps(stat_dict, indent=4)}\n")
-        elif args.export_format == "csv":
-            # with open(file_name, mode='w') as file_ptr:
-            # 	writer = csv.writer(file_ptr)
-            # 	for dataset_name, subset_name, in SERIES_A_DATASET_NAME_DICT.keys():
-            # 		row = [f"{dataset_name}"]
+    # if args.output_dir != "None":
+    #     file_name = os.path.join(args.output_dir, "stat") + f".{args.export_format}"
+    #     if args.export_format == "json":
+    #         with open(file_name, "w") as file_ptr:
+    #             file_ptr.write(f"{json.dumps(stat_dict, indent=4)}\n")
+    #     elif args.export_format == "csv":
+    #         # with open(file_name, mode='w') as file_ptr:
+    #         # 	writer = csv.writer(file_ptr)
+    #         # 	for dataset_name, subset_name, in SERIES_A_DATASET_NAME_DICT.keys():
+    #         # 		row = [f"{dataset_name}"]
 
-            # 	writer.writerow(stat_dict.values())
-            pass
-        else:
-            raise NotImplementedError
+    #         # 	writer.writerow(stat_dict.values())
+    #         pass
+    #     else:
+    #         raise NotImplementedError
 
 
 if __name__ == "__main__":
