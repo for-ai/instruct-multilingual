@@ -142,6 +142,7 @@ DATASET_MAPPER = {
     "xlel_wd https://huggingface.co/datasets/adithya7/xlel_wd": "adithya7/xlel_wd",
     "allenai/scirepeval/biomimicry https://huggingface.co/datasets/allenai/scirepeval/viewer/biomimicry/train": "allenai/scirepeval",
     "Turku Paraphrase https://huggingface.co/datasets/TurkuNLP/turku_paraphrase_corpus": "TurkuNLP/turku_paraphrase_corpus",
+    "Xwikis https://huggingface.co/datasets/GEM/xwikis": "GEM/xwikis",
 }
 
 # These tasks have huggingface data loading error
@@ -283,8 +284,8 @@ def process(args):
             jinja_template=f"{model_input} ||| {model_exp_output}",
             template_reference=prompt_template_data["Discord username"],
         )
-        assert len(lm_io) == 2, error_msg
-
+        if len(lm_io) != 2:
+            continue
         out_data = copy.deepcopy(prompt_template_data) if add_template_metadata else {}
         out_data["projected_template_lang"] = projected_template_lang
         out_data["inputs"] = lm_io[0]
