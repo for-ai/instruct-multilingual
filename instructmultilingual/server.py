@@ -80,7 +80,6 @@ async def translate_batch_async(
     target_language: List[str],
     texts: List[List[str]],
 ) -> List[str]:
-
     tgt_lang_list = []
     tokenized = []
 
@@ -105,7 +104,7 @@ async def translate_batch_async(
         return translator.translate_batch(
             tokenized,
             target_prefix=tgt_lang_list,
-            max_batch_size=64,
+            max_batch_size=128,
         )
 
     with ThreadPoolExecutor() as executor:

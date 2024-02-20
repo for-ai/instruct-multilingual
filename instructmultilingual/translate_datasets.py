@@ -367,8 +367,10 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
                                            source_language: str = "English",
                                            checkpoint: str = "facebook/nllb-200-3.3B",
                                            num_proc: int = 8,
+                                           file_ext: str = "json",
                                            translation_lang_codes: List[str] = T5_LANG_CODES,
-                                           exclude_languages: Set[str] = {"English"}) -> None:
+                                           exclude_languages: Set[str] = {"English"},
+                                           from_local: bool = False) -> None:
     """A wrapper for using translate_dataset_via_api specifically on dataset
     repos from HuggingFace hub. The default repo is bigscience/xP3.
 
@@ -386,8 +388,10 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
         source_language (str, optional): Languague of the original text. Defaults to "English".
         checkpoint (str, optional): Name of the checkpoint used for naming. Defaults to "facebook/nllb-200-3.3B".
         num_proc (int, optional): Number of processes to use for processing the dataset. Defaults to 8.
+        file_ext (str, optional): file extension for the downloaded dataset files. Defaults to "json".
         translation_lang_codes (List[str], optional): List of Flores-200 language codes to translate to. Defaults to T5_LANG_CODES.
         exclude_languages (Set[str], optional): Set of languages to exclude. Defaults to {"English"}.
+        from_local: (bool, optional): Load source files from local instead of HuggingFace. Defaults to False.
     """
     assert len(train_set) > 0 or len(validation_set) > 0 or len(
         test_set) > 0, "Error: one of train/validation/test sets has to have a path"
@@ -399,23 +403,37 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
     temp_root = "temp_datasets"
     temp_dir = f"{temp_root}/{dataset_name}"
     Path(temp_dir).mkdir(exist_ok=True, parents=True)
+    
+    if not from_local:
+        for split, files in dataset_splits.items():
+            if len(files) > 0:
+                temp_split_dir = f"{temp_root}/{dataset_name}/{split}"
+                Path(temp_split_dir).mkdir(exist_ok=True, parents=True)
+                for f in files:
 
-    for split, files in dataset_splits.items():
-        if len(files) > 0:
-            temp_split_dir = f"{temp_root}/{dataset_name}/{split}"
-            Path(temp_split_dir).mkdir(exist_ok=True, parents=True)
-            for f in files:
+                    hf_hub_download(repo_id=repo_id,
+                                    local_dir=temp_split_dir,
+                                    filename=f,
+                                    repo_type="dataset",
+                                    local_dir_use_symlinks=False)
 
-                hf_hub_download(repo_id=repo_id,
-                                local_dir=temp_split_dir,
-                                filename=f,
-                                repo_type="dataset",
-                                local_dir_use_symlinks=False)
+                    pth = os.path.join(temp_split_dir, f)
+                    dataset_template[split].append(pth)
+    else:
+        for split, files in dataset_splits.items():
+            if len(files) > 0:
+                for f in files:
+                    dataset_template[split].append(f)
 
-                pth = os.path.join(temp_split_dir, f)
-                dataset_template[split].append(pth)
 
-    dataset = load_dataset('json', data_files=dataset_template)
+    dataset = load_dataset(file_ext, data_files=dataset_template)
+    columns_to_remove = set()
+    for split in dataset.column_names:
+        for col in set(dataset[split].column_names) - set(translate_keys):
+            columns_to_remove.add(col)
+
+    columns_to_remove = list(columns_to_remove)
+    dataset = dataset.remove_columns(columns_to_remove)
 
     # Make a copy of the source dataset inside translated datasets as well
     date = datetime.today().strftime('%Y-%m-%d')
