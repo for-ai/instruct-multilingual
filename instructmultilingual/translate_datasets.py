@@ -13,7 +13,7 @@ from google.cloud import translate_v2
 from huggingface_hub import hf_hub_download
 from sentence_splitter import split_text_into_sentences
 
-from datasets import DatasetDict, load_dataset
+from datasets import DatasetDict, load_dataset, Dataset
 from instructmultilingual.cloud_translate_mapping import (cloud_translate_lang_code_to_name,
                                                           cloud_translate_lang_name_to_code)
 from instructmultilingual.flores_200 import (lang_code_to_name, lang_name_to_code)
@@ -359,18 +359,19 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
                                            splits: List[str],
                                            translate_keys: List[str],
                                            repo_id: str = "bigscience/xP3",
-                                           train_set: List[str] = [],
-                                           validation_set: List[str] = [],
-                                           test_set: List[str] = [],
+                                        #    train_set: List[str] = [],
+                                        #    validation_set: List[str] = [],
+                                        #    test_set: List[str] = [],
                                            url: str = "http://localhost:8000/translate",
                                            output_dir: str = "./datasets",
                                            source_language: str = "English",
                                            checkpoint: str = "facebook/nllb-200-3.3B",
                                            num_proc: int = 8,
-                                           file_ext: str = "json",
+                                        #    file_ext: str = "json",
                                            translation_lang_codes: List[str] = T5_LANG_CODES,
                                            exclude_languages: Set[str] = {"English"},
-                                           from_local: bool = False) -> None:
+                                        #    from_local: bool = False
+                                        ) -> None:
     """A wrapper for using translate_dataset_via_api specifically on dataset
     repos from HuggingFace hub. The default repo is bigscience/xP3.
 
@@ -393,47 +394,56 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
         exclude_languages (Set[str], optional): Set of languages to exclude. Defaults to {"English"}.
         from_local: (bool, optional): Load source files from local instead of HuggingFace. Defaults to False.
     """
-    assert len(train_set) > 0 or len(validation_set) > 0 or len(
-        test_set) > 0, "Error: one of train/validation/test sets has to have a path"
+    # assert len(train_set) > 0 or len(validation_set) > 0 or len(
+    #     test_set) > 0, "Error: one of train/validation/test sets has to have a path"
 
-    dataset_splits = {"train": train_set, "validation": validation_set, "test": test_set}
+    # dataset_splits = {"train": train_set, "validation": validation_set, "test": test_set}
 
-    dataset_template = defaultdict(list)
+    # dataset_template = defaultdict(list)
 
-    temp_root = "temp_datasets"
-    temp_dir = f"{temp_root}/{dataset_name}"
-    Path(temp_dir).mkdir(exist_ok=True, parents=True)
+    # temp_root = "temp_datasets"
+    # temp_dir = f"{temp_root}/{dataset_name}"
+    # Path(temp_dir).mkdir(exist_ok=True, parents=True)
     
-    if not from_local:
-        for split, files in dataset_splits.items():
-            if len(files) > 0:
-                temp_split_dir = f"{temp_root}/{dataset_name}/{split}"
-                Path(temp_split_dir).mkdir(exist_ok=True, parents=True)
-                for f in files:
+    # if not from_local:
+    #     for split, files in dataset_splits.items():
+    #         if len(files) > 0:
+    #             temp_split_dir = f"{temp_root}/{dataset_name}/{split}"
+    #             Path(temp_split_dir).mkdir(exist_ok=True, parents=True)
+    #             for f in files:
 
-                    hf_hub_download(repo_id=repo_id,
-                                    local_dir=temp_split_dir,
-                                    filename=f,
-                                    repo_type="dataset",
-                                    local_dir_use_symlinks=False)
+    #                 hf_hub_download(repo_id=repo_id,
+    #                                 local_dir=temp_split_dir,
+    #                                 filename=f,
+    #                                 repo_type="dataset",
+    #                                 local_dir_use_symlinks=False)
 
-                    pth = os.path.join(temp_split_dir, f)
-                    dataset_template[split].append(pth)
-    else:
-        for split, files in dataset_splits.items():
-            if len(files) > 0:
-                for f in files:
-                    dataset_template[split].append(f)
+    #                 pth = os.path.join(temp_split_dir, f)
+    #                 dataset_template[split].append(pth)
+    # else:
+    #     for split, files in dataset_splits.items():
+    #         if len(files) > 0:
+    #             for f in files:
+    #                 dataset_template[split].append(f)
 
 
-    dataset = load_dataset(file_ext, data_files=dataset_template)
-    columns_to_remove = set()
-    for split in dataset.column_names:
-        for col in set(dataset[split].column_names) - set(translate_keys):
-            columns_to_remove.add(col)
+    # dataset = load_dataset(file_ext, data_files=dataset_template)
+    
+    # seed = 42
+    dataset = load_dataset(repo_id)
+    # dataset["train"] = dataset["train"].shuffle(seed=seed).select(range(10000))
+    # dataset["validation"] = dataset["validation"].shuffle(seed=seed).select(range(10000))
 
-    columns_to_remove = list(columns_to_remove)
-    dataset = dataset.remove_columns(columns_to_remove)
+    # columns_to_remove = set()
+    # for split in dataset.column_names:
+    #     for col in set(dataset[split].column_names) - set(translate_keys):
+    #         columns_to_remove.add(col)
+
+    # dataset = Dataset.from_dict({"prompt": ["Summarize the following:"]})
+    # dataset = DatasetDict({"train": dataset})
+
+    # columns_to_remove = list(columns_to_remove)
+    # dataset = dataset.remove_columns(columns_to_remove)
 
     # Make a copy of the source dataset inside translated datasets as well
     date = datetime.today().strftime('%Y-%m-%d')
