@@ -1,48 +1,58 @@
 """Translate datasets from huggingface hub using a variety of methods."""
 
 import os
+from os import environ
 import random
 import time
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Set
-
+import pandas as pd
 import requests
-from google.cloud import translate_v2
+from google.cloud import translate_v2, translate
 from huggingface_hub import hf_hub_download
 from sentence_splitter import split_text_into_sentences
 
-from datasets import DatasetDict, load_dataset
+from datasets import DatasetDict, load_dataset, Dataset
 from instructmultilingual.cloud_translate_mapping import (cloud_translate_lang_code_to_name,
                                                           cloud_translate_lang_name_to_code)
 from instructmultilingual.flores_200 import (lang_code_to_name, lang_name_to_code)
 
-T5_LANG_CODES = [
-    'afr_Latn', 'als_Latn', 'amh_Ethi', 'ace_Arab', 'acm_Arab', 'acq_Arab', 'aeb_Arab', 'ajp_Arab', 'apc_Arab',
-    'arb_Arab', 'arb_Latn', 'ars_Arab', 'ary_Arab', 'arz_Arab', 'bjn_Arab', 'kas_Arab', 'knc_Arab', 'min_Arab',
-    'hye_Armn', 'azb_Arab', 'azj_Latn', 'eus_Latn', 'bel_Cyrl', 'ben_Beng', 'mni_Beng', 'bul_Cyrl', 'mya_Mymr',
-    'cat_Latn', 'ceb_Latn', 'yue_Hant', 'zho_Hans', 'zho_Hant', 'ces_Latn', 'dan_Latn', 'nld_Latn', 'eng_Latn',
-    'epo_Latn', 'est_Latn', 'fin_Latn', 'fra_Latn', 'glg_Latn', 'kat_Geor', 'deu_Latn', 'ell_Grek', 'guj_Gujr',
-    'hat_Latn', 'hau_Latn', 'heb_Hebr', 'hin_Deva', 'hun_Latn', 'isl_Latn', 'ibo_Latn', 'ind_Latn', 'gle_Latn',
-    'ita_Latn', 'jpn_Jpan', 'jav_Latn', 'kan_Knda', 'kaz_Cyrl', 'khm_Khmr', 'kor_Hang', 'ckb_Arab', 'kmr_Latn',
-    'kir_Cyrl', 'lao_Laoo', 'ace_Latn', 'bjn_Latn', 'knc_Latn', 'min_Latn', 'taq_Latn', 'lvs_Latn', 'lit_Latn',
-    'ltz_Latn', 'mkd_Cyrl', 'plt_Latn', 'mal_Mlym', 'zsm_Latn', 'mal_Mlym', 'mlt_Latn', 'mri_Latn', 'mar_Deva',
-    'khk_Cyrl', 'npi_Deva', 'nno_Latn', 'nob_Latn', 'pbt_Arab', 'pes_Arab', 'pol_Latn', 'por_Latn', 'ron_Latn',
-    'rus_Cyrl', 'smo_Latn', 'gla_Latn', 'srp_Cyrl', 'sna_Latn', 'snd_Arab', 'sin_Sinh', 'slk_Latn', 'slv_Latn',
-    'som_Latn', 'nso_Latn', 'sot_Latn', 'spa_Latn', 'sun_Latn', 'swh_Latn', 'swe_Latn', 'tgk_Cyrl', 'tam_Taml',
-    'tel_Telu', 'tha_Thai', 'tur_Latn', 'ukr_Cyrl', 'urd_Arab', 'uzn_Latn', 'vie_Latn', 'cym_Latn', 'xho_Latn',
-    'ydd_Hebr', 'yor_Latn', 'zul_Latn'
-]
+T5_LANG_CODES = ['hin_Deva']
 
-T5_CLOUD_TRANSLATE_LANG_CODES = [
-    'eu', 'st', 'lo', 'fi', 'co', 'ro', 'sd', 'sv', 'ta', 'kn', 'gd', 'et', 'gl', 'fy', 'ru', 'mr', 'zu', 'ky', 'da',
-    'sr', 'haw', 'hi', 'gu', 'su', 'tr', 'bn', 'hu', 'hy', 'jv', 'pa', 'de', 'la', 'uz', 'lt', 'no', 'xh', 'mk', 'ms',
-    'ur', 'ar', 'am', 'vi', 'it', 'cy', 'en', 'eo', 'be', 'id', 'my', 'is', 'nl', 'sn', 'sm', 'so', 'ha', 'mi', 'th',
-    'kk', 'ml', 'hmn', 'uk', 'ga', 'lb', 'zh-CN', 'zh-TW', 'mt', 'fr', 'ku', 'ht', 'sw', 'sk', 'km', 'si', 'ceb', 'tg',
-    'cs', 'pl', 'ig', 'sl', 'ka', 'ca', 'mn', 'yo', 'fa', 'es', 'iw', 'bg', 'af', 'el', 'ps', 'mg', 'yi', 'pt', 'ja',
-    'ny', 'ko', 'lv', 'te', 'sq', 'ne', 'az'
-]
+PROJECT_ID = environ.get("PROJECT_ID", "")
+assert PROJECT_ID
+PARENT = f"projects/{PROJECT_ID}"
+
+# T5_LANG_CODES = [
+#     'afr_Latn', 'als_Latn', 'amh_Ethi', 'ace_Arab', 'acm_Arab', 'acq_Arab', 'aeb_Arab', 'ajp_Arab', 'apc_Arab',
+#     'arb_Arab', 'arb_Latn', 'ars_Arab', 'ary_Arab', 'arz_Arab', 'bjn_Arab', 'kas_Arab', 'knc_Arab', 'min_Arab',
+#     'hye_Armn', 'azb_Arab', 'azj_Latn', 'eus_Latn', 'bel_Cyrl', 'ben_Beng', 'mni_Beng', 'bul_Cyrl', 'mya_Mymr',
+#     'cat_Latn', 'ceb_Latn', 'yue_Hant', 'zho_Hans', 'zho_Hant', 'ces_Latn', 'dan_Latn', 'nld_Latn', 'eng_Latn',
+#     'epo_Latn', 'est_Latn', 'fin_Latn', 'fra_Latn', 'glg_Latn', 'kat_Geor', 'deu_Latn', 'ell_Grek', 'guj_Gujr',
+#     'hat_Latn', 'hau_Latn', 'heb_Hebr', 'hin_Deva', 'hun_Latn', 'isl_Latn', 'ibo_Latn', 'ind_Latn', 'gle_Latn',
+#     'ita_Latn', 'jpn_Jpan', 'jav_Latn', 'kan_Knda', 'kaz_Cyrl', 'khm_Khmr', 'kor_Hang', 'ckb_Arab', 'kmr_Latn',
+#     'kir_Cyrl', 'lao_Laoo', 'ace_Latn', 'bjn_Latn', 'knc_Latn', 'min_Latn', 'taq_Latn', 'lvs_Latn', 'lit_Latn',
+#     'ltz_Latn', 'mkd_Cyrl', 'plt_Latn', 'mal_Mlym', 'zsm_Latn', 'mal_Mlym', 'mlt_Latn', 'mri_Latn', 'mar_Deva',
+#     'khk_Cyrl', 'npi_Deva', 'nno_Latn', 'nob_Latn', 'pbt_Arab', 'pes_Arab', 'pol_Latn', 'por_Latn', 'ron_Latn',
+#     'rus_Cyrl', 'smo_Latn', 'gla_Latn', 'srp_Cyrl', 'sna_Latn', 'snd_Arab', 'sin_Sinh', 'slk_Latn', 'slv_Latn',
+#     'som_Latn', 'nso_Latn', 'sot_Latn', 'spa_Latn', 'sun_Latn', 'swh_Latn', 'swe_Latn', 'tgk_Cyrl', 'tam_Taml',
+#     'tel_Telu', 'tha_Thai', 'tur_Latn', 'ukr_Cyrl', 'urd_Arab', 'uzn_Latn', 'vie_Latn', 'cym_Latn', 'xho_Latn',
+#     'ydd_Hebr', 'yor_Latn', 'zul_Latn'
+# ]
+
+T5_CLOUD_TRANSLATE_LANG_CODES = ['zh-CN', 'zh-TW', 'ja', 'ko',
+'nl','fr', 'de', 'el', 'it','pl', 'ro', 'uk', 'ru', 'cs', 'pt', 'es', 'sv', 'lt', 'sr',
+'mg', 'so', 'yo', 'ha', 'am', 'sn', 'ig', 'ny'] #'hi', 'vi','ms','fil','id','te','si','ne', 'ar', 'fa', 'tr', 'ky', 'he', 
+
+#     'eu', 'st', 'lo', 'fi', 'co', 'ro', 'sd', 'sv', 'ta', 'kn', 'gd', 'et', 'gl', 'fy', 'ru', 'mr', 'zu', 'ky', 'da',
+#     'sr', 'haw', 'hi', 'gu', 'su', 'tr', 'bn', 'hu', 'hy', 'jv', 'pa', 'de', 'la', 'uz', 'lt', 'no', 'xh', 'mk', 'ms',
+#     'ur', 'ar', 'am', 'vi', 'it', 'cy', 'en', 'eo', 'be', 'id', 'my', 'is', 'nl', 'sn', 'sm', 'so', 'ha', 'mi', 'th',
+#     'kk', 'ml', 'hmn', 'uk', 'ga', 'lb', 'zh-CN', 'zh-TW', 'mt', 'fr', 'ku', 'ht', 'sw', 'sk', 'km', 'si', 'ceb', 'tg',
+#     'cs', 'pl', 'ig', 'sl', 'ka', 'ca', 'mn', 'yo', 'fa', 'es', 'iw', 'bg', 'af', 'el', 'ps', 'mg', 'yi', 'pt', 'ja',
+#     'ny', 'ko', 'lv', 'te', 'sq', 'ne', 'az'
+# ]
 
 
 def inference_request(url: str, source_language: str, target_language: str, texts: List[str]) -> List[str]:
@@ -115,44 +125,54 @@ def translate_sent_by_sent(
     Returns:
         Dict[str,List[str]]: Translated outputs based on the example Dict
     """
-    from collections import defaultdict
+    # from collections import defaultdict
 
-    for k in example.keys():
-        num_inputs = len(example[k])
-        break
+    # for k in example.keys():
+    #     num_inputs = len(example[k])
+    #     print("num_inputs:", num_inputs)
+    #     break
 
-    sentences = []
-    sentenized_example = defaultdict(list)
+    # sentences = []
+    # sentenized_example = defaultdict(list)
 
-    for k in keys_to_be_translated:
-        sentenized_example[f"{k}_pos"].append(0)
+    # for k in keys_to_be_translated:
+    #     print("keys_to_be_translated:", k)
+    #     sentenized_example[f"{k}_pos"].append(0)
 
-    for i in range(num_inputs):
+    # for i in range(num_inputs):
+    #     print("i":, i)
+    #     for k in example.keys():
+    #         print("k:", k)
+    #         sentences = split_text_into_sentences(text=example[k][i], language='en')
+            
+    #         sentenized_example[k].extend(sentences)
+    #         sentenized_example[f"{k}_pos"].append(sentenized_example[f"{k}_pos"][-1] + len(sentences))
 
-        for k in example.keys():
-
-            sentences = split_text_into_sentences(text=example[k][i], language='en')
-            sentenized_example[k].extend(sentences)
-            sentenized_example[f"{k}_pos"].append(sentenized_example[f"{k}_pos"][-1] + len(sentences))
-
-    result = call_inference_api(example=sentenized_example,
+    ## **DEBUGGING***
+    # print("len examples:", len(example))
+    # for k in example.keys():
+    #     print("key:", k)
+    #     num_inputs = len(example[k])
+    #     print("num inputs:", num_inputs)
+    
+    result = call_inference_api(example=example,
                                 url=url,
                                 keys_to_be_translated=keys_to_be_translated,
                                 source_lang_code=source_lang_code,
                                 target_lang_code=target_lang_code)
 
-    for k in keys_to_be_translated:
-        merged_texts = []
-        l = 0
-        r = 1
-        while r < len(result[f"{k}_pos"]):
-            start = result[f"{k}_pos"][l]
-            end = result[f"{k}_pos"][r]
-            merged_texts.append(' '.join(result[k][start:end]))
-            l += 1
-            r += 1
-        example[k] = merged_texts
-    return example
+    # for k in keys_to_be_translated:
+    #     merged_texts = []
+    #     l = 0
+    #     r = 1
+    #     while r < len(result[f"{k}_pos"]):
+    #         start = result[f"{k}_pos"][l]
+    #         end = result[f"{k}_pos"][r]
+    #         merged_texts.append(' '.join(result[k][start:end]))
+    #         l += 1
+    #         r += 1
+    #     example[k] = merged_texts
+    return result
 
 
 def translate_dataset_via_inference_api(
@@ -202,7 +222,7 @@ def translate_dataset_via_inference_api(
     for split in splits:
         split_time = time.time()
         ds = dataset[split]
-        print(f"[{split}] {len(ds)=}")
+        print(f"[{split}] {len(ds):}")
         ds = ds.map(
             lambda x: translate_sent_by_sent(
                 x,
@@ -214,7 +234,7 @@ def translate_dataset_via_inference_api(
             batched=True,
             num_proc=num_proc,
         )
-        print(f"[{split}] One example translated {ds[0]=}")
+        print(f"[{split}] One example translated {ds[0]:}")
         print(f"[{split}] took {time.time() - split_time:.4f} seconds")
 
         translation_path = os.path.join(output_dir, dataset_name, f"{source_language_code}_to_{target_language_code}",
@@ -249,13 +269,14 @@ def cloud_translate(example: Dict[str, str],
     Args:
         example (Dict[str, str]): A batch of inputs from the dataset for translation. Keys are the column names, values are the batch of text inputs
         target_lang_code (str): Language code for the target language
-        keys_to_be_translated (List[str]): The keys/columns for the texts you want translated.
+        keys_to_be_translated (List[str]): The keys/columns for the texts you want translated.cl
         max_tries (int, optional): _description_. Defaults to 5.
 
     Returns:
         Dict[str, str]: Translated outputs based on the example Dict
     """
-    translate_client = translate_v2.Client()
+    # translate_client = translate_v2.Client()
+    translate_client = translate.TranslationServiceClient()
 
     tries = 0
 
@@ -263,8 +284,20 @@ def cloud_translate(example: Dict[str, str],
         tries += 1
         try:
             for key in keys_to_be_translated:
-                results = translate_client.translate(example[key], target_language=target_lang_code)
-                example[key] = [result["translatedText"] for result in results]
+                # print("target_lang_code:",target_lang_code)
+                # print("example key:", example[key])
+                # print("example key type:", type(example[key]))
+                # results = translate_client.translate(example[key], target_language=target_lang_code)
+                
+                results = translate_client.translate_text(
+                            parent=PARENT,
+                            contents=example[key],
+                            target_language_code=target_lang_code,
+                            mime_type="text/plain"
+                )
+                # example[key] = [result["translatedText"] for result in results]
+                example[key] = [translation.translated_text for translation in results.translations]
+                # print("results:", example[key])
                 time.sleep(random.uniform(0.8, 1.5))
         except Exception as e:
             print(e)
@@ -318,7 +351,7 @@ def translate_dataset_via_cloud_translate(
     for split in splits:
         split_time = time.time()
         ds = dataset[split]
-        print(f"[{split}] {len(ds)=}")
+        print(f"[{split}] {len(ds):}")
         ds = ds.map(
             lambda x: cloud_translate(
                 x,
@@ -329,7 +362,7 @@ def translate_dataset_via_cloud_translate(
             batch_size=40,  # translate api has limit of 204800 bytes max at a time
             num_proc=num_proc,
         )
-        print(f"[{split}] One example translated {ds[0]=}")
+        print(f"[{split}] One example translated {ds[0]:}")
         print(f"[{split}] took {time.time() - split_time:.4f} seconds")
 
         translation_path = os.path.join(output_dir, dataset_name, f"{source_language_code}_to_{target_language_code}",
@@ -404,35 +437,42 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
     temp_dir = f"{temp_root}/{dataset_name}"
     Path(temp_dir).mkdir(exist_ok=True, parents=True)
     
-    if not from_local:
-        for split, files in dataset_splits.items():
-            if len(files) > 0:
-                temp_split_dir = f"{temp_root}/{dataset_name}/{split}"
-                Path(temp_split_dir).mkdir(exist_ok=True, parents=True)
-                for f in files:
+    # if not from_local:
+    #     for split, files in dataset_splits.items():
+    #         if len(files) > 0:
+    #             temp_split_dir = f"{temp_root}/{dataset_name}/{split}"
+    #             Path(temp_split_dir).mkdir(exist_ok=True, parents=True)
+    #             for f in files:
 
-                    hf_hub_download(repo_id=repo_id,
-                                    local_dir=temp_split_dir,
-                                    filename=f,
-                                    repo_type="dataset",
-                                    local_dir_use_symlinks=False)
+    #                 hf_hub_download(repo_id=repo_id,
+    #                                 local_dir=temp_split_dir,
+    #                                 filename=f,
+    #                                 repo_type="dataset",
+    #                                 local_dir_use_symlinks=False)
 
-                    pth = os.path.join(temp_split_dir, f)
-                    dataset_template[split].append(pth)
-    else:
-        for split, files in dataset_splits.items():
-            if len(files) > 0:
-                for f in files:
-                    dataset_template[split].append(f)
+    #                 pth = os.path.join(temp_split_dir, f)
+    #                 dataset_template[split].append(pth)
+    # else:
+    #     for split, files in dataset_splits.items():
+    #         if len(files) > 0:
+    #             for f in files:
+    #                 dataset_template[split].append(f)
 
+    # df = pd.read_csv("./mmlu_filtered_for_translation.csv", index_col=0)
+    # df = df.drop(columns=['choices', 'answer_key'], axis=1)
+    # dataset = Dataset.from_pandas(df.head())
+    # print(type(dataset))
+    # print("len ds:", len(dataset))
 
-    dataset = load_dataset(file_ext, data_files=dataset_template)
+    dataset = load_dataset('CohereForAI/mmlu_filtered_translation')
     columns_to_remove = set()
     for split in dataset.column_names:
         for col in set(dataset[split].column_names) - set(translate_keys):
-            columns_to_remove.add(col)
+            if col != 'subject':
+                columns_to_remove.add(col)
 
     columns_to_remove = list(columns_to_remove)
+    print("columns_to_remove:", columns_to_remove)
     dataset = dataset.remove_columns(columns_to_remove)
 
     # Make a copy of the source dataset inside translated datasets as well
@@ -459,6 +499,7 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
         ))
 
     if checkpoint == "google_cloud_translate":
+        translation_lang_codes =T5_CLOUD_TRANSLATE_LANG_CODES
         for code in translation_lang_codes:
             l = cloud_translate_lang_code_to_name[code]
             if l not in exclude_languages:
