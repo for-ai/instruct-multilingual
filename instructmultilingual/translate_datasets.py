@@ -166,7 +166,7 @@ def translate_dataset_via_inference_api(
     output_dir: str = "./datasets",
     source_language: str = "English",
     checkpoint: str = "facebook/nllb-200-3.3B",
-    num_proc: int = 8,
+    num_proc: int = 1,
 ) -> None:
     """This function takes an DatasetDict object and translates it via the
     translation inference server API. The function then ouputs the translations
@@ -186,7 +186,7 @@ def translate_dataset_via_inference_api(
         output_dir (str, optional): Root directory of all datasets. Defaults to "./datasets".
         source_language (str, optional): Languague of the original text. Defaults to "English".
         checkpoint (str, optional): Name of the checkpoint used for naming. Defaults to "facebook/nllb-200-3.3B".
-        num_proc (int, optional): Number of processes to use for processing the dataset. Defaults to 8.
+        num_proc (int, optional): Number of processes to use for processing the dataset. Defaults to 1.
     """
 
     date = datetime.today().strftime('%Y-%m-%d')
@@ -283,7 +283,7 @@ def translate_dataset_via_cloud_translate(
     output_dir: str = "./datasets",
     source_language: str = "English",
     checkpoint: str = "google_cloud_translate",
-    num_proc: int = 8,
+    num_proc: int = 1,
 ) -> None:
     """This function takes an DatasetDict object and translates it via the
     translation inference server API. The function then ouputs the translations
@@ -302,7 +302,7 @@ def translate_dataset_via_cloud_translate(
         output_dir (str, optional): Root directory of all datasets. Defaults to "./datasets".
         source_language (str, optional): Languague of the original text. Defaults to "English".
         checkpoint (str, optional): Name of the checkpoint used for naming. Defaults to "facebook/nllb-200-3.3B".
-        num_proc (int, optional): Number of processes to use for processing the dataset. Defaults to 8.
+        num_proc (int, optional): Number of processes to use for processing the dataset. Defaults to 1.
     """
 
     date = datetime.today().strftime('%Y-%m-%d')
@@ -366,7 +366,7 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
                                            output_dir: str = "./datasets",
                                            source_language: str = "English",
                                            checkpoint: str = "facebook/nllb-200-3.3B",
-                                           num_proc: int = 8,
+                                           num_proc: int = 1,
                                            file_ext: str = "json",
                                            translation_lang_codes: List[str] = T5_LANG_CODES,
                                            exclude_languages: Set[str] = {"English"},
@@ -387,7 +387,7 @@ def translate_dataset_from_huggingface_hub(dataset_name: str,
         output_dir (str, optional): Root directory of all datasets. Defaults to "./datasets".
         source_language (str, optional): Languague of the original text. Defaults to "English".
         checkpoint (str, optional): Name of the checkpoint used for naming. Defaults to "facebook/nllb-200-3.3B".
-        num_proc (int, optional): Number of processes to use for processing the dataset. Defaults to 8.
+        num_proc (int, optional): Number of processes to use for processing the dataset. Defaults to 1.
         file_ext (str, optional): file extension for the downloaded dataset files. Defaults to "json".
         translation_lang_codes (List[str], optional): List of Flores-200 language codes to translate to. Defaults to T5_LANG_CODES.
         exclude_languages (Set[str], optional): Set of languages to exclude. Defaults to {"English"}.

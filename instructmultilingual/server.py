@@ -29,7 +29,6 @@ async def startup_event():
         "models/nllb-200-3.3B-converted",
         device="auto",
         compute_type="float16",
-        device_index=list(range(8)),
     )
     asyncio.create_task(batch_translate())
 
@@ -104,7 +103,7 @@ async def translate_batch_async(
         return translator.translate_batch(
             tokenized,
             target_prefix=tgt_lang_list,
-            max_batch_size=128,
+            max_batch_size=16,
         )
 
     with ThreadPoolExecutor() as executor:
